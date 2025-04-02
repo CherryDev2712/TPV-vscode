@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<%- include('load/head') %>
+<body>
+    <%- include('load/nav') %>
+    <main class="container mt-4">
+        <h1 class="mb-4">Historial de Ventas</h1>
+        
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Fecha/Hora</th>
+                        <th>Cliente</th>
+                        <th>Total</th>
+                        <th>Tipo Pago</th>
+                        <th>Plataforma</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="ventasTableBody">
+                    <!-- Las ventas se cargarán aquí -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Modal para ver detalles de venta (ACTUALIZADO) -->
+    <div class="modal fade" id="detalleVentaModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detalles de Venta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>Fecha:</strong> <span id="detalleFecha"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Cliente:</strong> <span id="detalleCliente"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Total:</strong> $<span id="detalleTotal"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Tipo de pago:</strong> <span id="detalleTipoPago"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Plataforma:</strong> <span id="detallePlataforma"></span></p>
+                        </div>
+                    </div>
+                    <hr>
+                    <h6>Productos vendidos:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio Unitario</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detalleProductosBody">
+                                <!-- Los productos de la venta aparecerán aquí -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="eliminarVentaBtn">Eliminar Venta</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const ventasTableBody = document.getElementById("ventasTableBody");
+            const detalleVentaModal = new bootstrap.Modal(document.getElementById('detalleVentaModal'));
+            let ventaActual = null;
+            let ventaActualIndex = null;
+            
+            // Cargar ventas al iniciar
+            cargarVentas();
+
+            function cargarVentas() {
+                const ventas = JSON.parse(localStorage.getItem('ventas')) || [];
+                ventasTableBody.innerHTML = '';
+                
+                if (ventas.length === 0) {
+                    ventasTableBody.innerHTML = '<tr><td colspan="6" class="text-center">No hay ventas registradas</td></tr>';
+                    return;
+                }
+                
+                // Ordenar ventas por fecha (más reciente primero)
+                ventas.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+                
+                ventas.forEach((venta, index) => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${formatearFecha(venta.fecha)}</td>
+                        <td>${venta.cliente || 'Sin nombre'}</td>
+                        <td>$${venta.total.toFixed(2)}</td>
+                        <td>${venta.tipoPago}</td>
+                        <td>${venta.plataforma || 'Local'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info ver-detalle-btn me-2" data-index="${index}">
+                                <i class="fas fa-eye"></i> Detalle
+                            </button>
+
+                        </td>
+                    `;
+                    ventasTableBody.appendChild(row);
+                });
+                
+                // Agregar eventos a los botones
+                document.querySelectorAll('.ver-detalle-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        mostrarDetalleVenta(btn.dataset.index);
+                    });
+                });
+                
+                document.querySelectorAll('.eliminar-venta-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        eliminarVenta(btn.dataset.index);
+                    });
+                });
+            }
+
+            function mostrarDetalleVenta(index) {
+                const ventas = JSON.parse(localStorage.getItem('ventas')) || [];
+                ventaActual = ventas[index];
+                ventaActualIndex = index;
+                
+                if (!ventaActual) return;
+                
+                // Llenar datos básicos
+                document.getElementById("detalleFecha").textContent = formatearFecha(ventaActual.fecha, true);
+                document.getElementById("detalleCliente").textContent = ventaActual.cliente || 'Sin nombre';
+                document.getElementById("detalleTotal").textContent = ventaActual.total.toFixed(2);
+                document.getElementById("detalleTipoPago").textContent = ventaActual.tipoPago;
+                document.getElementById("detallePlataforma").textContent = ventaActual.plataforma || 'Local';
+                
+                // Llenar tabla de productos
+                const productosBody = document.getElementById("detalleProductosBody");
+                productosBody.innerHTML = '';
+                
+                ventaActual.productos.forEach(producto => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${producto.nombre}</td>
+                        <td>${producto.cantidad}</td>
+                        <td>$${producto.precioUnitario.toFixed(2)}</td>
+                        <td>$${(producto.precioUnitario * producto.cantidad).toFixed(2)}</td>
+                    `;
+                    productosBody.appendChild(row);
+                });
+                
+                // Configurar botón eliminar en el modal
+                const eliminarVentaBtn = document.getElementById("eliminarVentaBtn");
+                eliminarVentaBtn.onclick = () => {
+                    if (confirm('¿Estás seguro de eliminar esta venta permanentemente?')) {
+                        eliminarVenta(ventaActualIndex);
+                        detalleVentaModal.hide();
+                    }
+                };
+                
+                detalleVentaModal.show();
+            }
+
+            function eliminarVenta(index) {
+                let ventas = JSON.parse(localStorage.getItem('ventas')) || [];
+                if (index >= 0 && index < ventas.length) {
+                    ventas.splice(index, 1);
+                    localStorage.setItem('ventas', JSON.stringify(ventas));
+                    cargarVentas(); // Recargar la tabla
+                    
+                    // Mostrar notificación de éxito
+                    alert('Venta eliminada correctamente');
+                }
+            }
+
+            function formatearFecha(fechaString, conHora = false) {
+                const fecha = new Date(fechaString);
+                const opciones = { 
+                    year: 'numeric', 
+                    month: '2-digit', 
+                    day: '2-digit',
+                    hour: conHora ? '2-digit' : undefined,
+                    minute: conHora ? '2-digit' : undefined,
+                    hour12: true
+                };
+                return fecha.toLocaleString('es-ES', opciones);
+            }
+        });
+    </script>
+    
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* Estilos adicionales para mejorar la visualización */
+        .table th {
+            white-space: nowrap;
+        }
+        .table td {
+            vertical-align: middle;
+        }
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+    </style>
+</body>
+</html>

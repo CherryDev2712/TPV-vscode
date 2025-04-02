@@ -1,0 +1,349 @@
+<div class="sidebar">
+    <h4 class="text-center">Productos Seleccionados</h4>
+    <hr>
+    <div class="selected-products" id="selectedProducts">
+        <!-- Los productos seleccionados aparecerán aquí -->
+    </div>
+    <div class="sidebar-footer">
+        <hr>
+        <div class="total-section">
+            <h5>Total: $<span id="totalAmount">0.00</span></h5>
+            <button id="finalizarVentaBtn" class="btn btn-success w-100 mt-2" disabled>Finalizar Venta</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación de venta (ACTUALIZADO) -->
+<div class="modal fade" id="ventaModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Venta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Total a cobrar:</label>
+                    <input type="text" class="form-control" id="totalCobrar" readonly>
+                </div>
+                
+                <!-- Campo para nombre del cliente -->
+                <div class="mb-3">
+                    <label for="nombreCliente" class="form-label">Nombre del Cliente:</label>
+                    <input type="text" class="form-control" id="nombreCliente" placeholder="Opcional">
+                </div>
+                
+                <!-- Select para tipo de pago -->
+                <div class="mb-3">
+                    <label for="tipoPago" class="form-label">Tipo de Pago:</label>
+                    <select class="form-select" id="tipoPago" required>
+                        <option value="" selected disabled>Seleccione tipo de pago...</option>
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Tarjeta Débito">Tarjeta Débito</option>
+                        <option value="Tarjeta Crédito">Tarjeta Crédito</option>
+                        <option value="Transferencia">Transferencia</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+                
+                <!-- Select para plataforma -->
+                <div class="mb-3">
+                    <label for="plataformaPago" class="form-label">Plataforma:</label>
+                    <select class="form-select" id="plataformaPago">
+                        <option value="" selected>Ninguna (para ventas locales)</option>
+                        <option value="Uber">Uber</option>
+                        <option value="Didi">Didi</option>
+                        <option value="Rappi">Rappi</option>
+                        <option value="Otro">Otra plataforma</option>
+                    </select>
+                </div>
+                <div class="mb-3" id="otraPlataformaContainer" style="display: none;">
+                    <label for="otraPlataforma" class="form-label">Especifique plataforma:</label>
+                    <input type="text" class="form-control" id="otraPlataforma">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmarVentaBtn">Registrar Venta</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .sidebar {
+        width: 250px;
+        background: #2c3e50;
+        color: white;
+        padding: 20px;
+        height: 100%;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+    }
+    .selected-products {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 15px;
+        flex-grow: 1;
+        overflow-y: auto;
+    }
+    .selected-product {
+        background: #34495e;
+        padding: 10px;
+        border-radius: 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .selected-product img {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 4px;
+        margin-right: 10px;
+    }
+    .selected-product-info {
+        flex-grow: 1;
+    }
+    .selected-product-name {
+        font-weight: bold;
+        margin-bottom: 2px;
+    }
+    .selected-product-price {
+        font-size: 0.8rem;
+        color: #ddd;
+    }
+    .selected-product-quantity {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 5px;
+    }
+    .quantity-btn {
+        background: #28a745;
+        color: white;
+        border: none;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+    .quantity-value {
+        min-width: 20px;
+        text-align: center;
+    }
+    .sidebar-footer {
+        margin-top: auto;
+    }
+    .total-section {
+        padding: 10px;
+        background: #34495e;
+        border-radius: 5px;
+        text-align: right;
+    }
+    #finalizarVentaBtn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .btn-eliminar {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .btn-eliminar:hover {
+        background-color: #c82333;
+    }
+</style>
+
+<script>
+    // Función para actualizar todo el estado de la venta
+    function actualizarEstadoVenta() {
+        const productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
+        document.getElementById("finalizarVentaBtn").disabled = productosSeleccionados.length === 0;
+        actualizarSidebar();
+        actualizarTotal();
+    }
+
+    // Función para actualizar el sidebar con los productos
+    function actualizarSidebar() {
+        const productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
+        const selectedProductsContainer = document.getElementById("selectedProducts");
+        selectedProductsContainer.innerHTML = '';
+        
+        productosSeleccionados.forEach(item => {
+            const productElement = document.createElement("div");
+            productElement.classList.add("selected-product");
+            productElement.dataset.id = item.producto.id;
+            productElement.innerHTML = `
+                <img src="${item.producto.imagenURL}" alt="${item.producto.nombre}">
+                <div class="selected-product-info">
+                    <div class="selected-product-name">${item.producto.nombre}</div>
+                    <div class="selected-product-price">$${item.producto.precio} c/u</div>
+                    <div class="selected-product-quantity">
+                        <button class="quantity-btn decrement" data-id="${item.producto.id}">-</button>
+                        <span class="quantity-value">${item.cantidad}</span>
+                        <button class="quantity-btn increment" data-id="${item.producto.id}">+</button>
+                    </div>
+                    <div class="selected-product-subtotal">Subtotal: $${(item.producto.precio * item.cantidad).toFixed(2)}</div>
+                </div>
+                <button class="btn-eliminar" data-id="${item.producto.id}">×</button>
+            `;
+            
+            selectedProductsContainer.appendChild(productElement);
+            
+            // Eventos para cambiar cantidad
+            productElement.querySelector('.decrement').addEventListener('click', (e) => {
+                e.stopPropagation();
+                actualizarCantidadProducto(item.producto.id, -1);
+            });
+            
+            productElement.querySelector('.increment').addEventListener('click', (e) => {
+                e.stopPropagation();
+                actualizarCantidadProducto(item.producto.id, 1);
+            });
+            
+            // Evento para eliminar producto
+            productElement.querySelector('.btn-eliminar').addEventListener('click', (e) => {
+                e.stopPropagation();
+                eliminarProductoDeSidebar(item.producto.id);
+            });
+        });
+    }
+
+    // Función para actualizar el total
+    function actualizarTotal() {
+        const productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
+        let total = 0;
+        
+        productosSeleccionados.forEach(item => {
+            total += item.producto.precio * item.cantidad;
+        });
+        
+        document.getElementById("totalAmount").textContent = total.toFixed(2);
+    }
+
+    // Función para actualizar cantidad de producto
+    function actualizarCantidadProducto(productId, cambio) {
+        let productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
+        const itemIndex = productosSeleccionados.findIndex(item => item.producto.id === productId);
+        
+        if (itemIndex >= 0) {
+            productosSeleccionados[itemIndex].cantidad += cambio;
+            
+            // Eliminar si la cantidad es cero o menos
+            if (productosSeleccionados[itemIndex].cantidad <= 0) {
+                productosSeleccionados.splice(itemIndex, 1);
+            }
+            
+            localStorage.setItem('productosSeleccionados', JSON.stringify(productosSeleccionados));
+            actualizarEstadoVenta();
+        }
+    }
+
+    // Función para eliminar producto del sidebar
+    function eliminarProductoDeSidebar(id) {
+        if (confirm('¿Eliminar este producto de la venta?')) {
+            let productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
+            productosSeleccionados = productosSeleccionados.filter(item => item.producto.id !== id);
+            localStorage.setItem('productosSeleccionados', JSON.stringify(productosSeleccionados));
+            actualizarEstadoVenta();
+        }
+    }
+
+    // Sistema de ventas
+    document.addEventListener("DOMContentLoaded", () => {
+        const finalizarVentaBtn = document.getElementById("finalizarVentaBtn");
+        const ventaModal = new bootstrap.Modal(document.getElementById('ventaModal'));
+        const totalCobrarInput = document.getElementById("totalCobrar");
+        const nombreClienteInput = document.getElementById("nombreCliente");
+        const tipoPagoSelect = document.getElementById("tipoPago");
+        const plataformaPagoSelect = document.getElementById("plataformaPago");
+        const otraPlataformaContainer = document.getElementById("otraPlataformaContainer");
+        const otraPlataformaInput = document.getElementById("otraPlataforma");
+        const confirmarVentaBtn = document.getElementById("confirmarVentaBtn");
+
+        // Evento para mostrar plataforma "Otro"
+        plataformaPagoSelect.addEventListener("change", (e) => {
+            otraPlataformaContainer.style.display = e.target.value === "Otro" ? "block" : "none";
+            if (e.target.value !== "Otro") {
+                otraPlataformaInput.value = "";
+            }
+        });
+
+        // Finalizar venta
+        finalizarVentaBtn.addEventListener("click", () => {
+            const total = parseFloat(document.getElementById("totalAmount").textContent);
+            totalCobrarInput.value = total.toFixed(2);
+            nombreClienteInput.value = "";
+            tipoPagoSelect.value = "";
+            plataformaPagoSelect.value = "";
+            otraPlataformaContainer.style.display = "none";
+            otraPlataformaInput.value = "";
+            ventaModal.show();
+        });
+
+        // Confirmar venta
+        confirmarVentaBtn.addEventListener("click", () => {
+            const nombreCliente = nombreClienteInput.value.trim();
+            const tipoPago = tipoPagoSelect.value;
+            const plataformaPago = plataformaPagoSelect.value;
+            const otraPlataforma = otraPlataformaInput.value;
+            
+            if (!tipoPago) {
+                alert("Por favor seleccione un tipo de pago");
+                return;
+            }
+            
+            if (plataformaPago === "Otro" && !otraPlataforma) {
+                alert("Por favor especifique la plataforma");
+                return;
+            }
+            
+            const plataformaCompleta = plataformaPago === "Otro" ? otraPlataforma : plataformaPago;
+            const productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
+            const total = parseFloat(totalCobrarInput.value);
+            
+            // Crear objeto venta
+            const venta = {
+                fecha: new Date().toISOString(),
+                cliente: nombreCliente || "Sin nombre",
+                tipoPago: tipoPago,
+                plataforma: plataformaCompleta || "Local",
+                total: total,
+                productos: productosSeleccionados.map(item => ({
+                    id: item.producto.id,
+                    nombre: item.producto.nombre,
+                    precioUnitario: parseFloat(item.producto.precio),
+                    cantidad: item.cantidad
+                }))
+            };
+            
+            // Guardar venta
+            guardarVenta(venta);
+            
+            // Limpiar productos seleccionados
+            localStorage.removeItem('productosSeleccionados');
+            actualizarEstadoVenta();
+            
+            ventaModal.hide();
+            alert("Venta registrada exitosamente!");
+        });
+
+        function guardarVenta(venta) {
+            let ventas = JSON.parse(localStorage.getItem('ventas')) || [];
+            ventas.push(venta);
+            localStorage.setItem('ventas', JSON.stringify(ventas));
+        }
+
+        // Cargar estado inicial
+        actualizarEstadoVenta();
+    });
+</script>
