@@ -2,7 +2,7 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import routes from './routes/routes.js'; // Importar rutas
+import routes from './src/routes/routes.js'; // Importar rutas
 
 // Obtener __dirname en ES Modules
 const __filename = fileURLToPath(import.meta.url);
