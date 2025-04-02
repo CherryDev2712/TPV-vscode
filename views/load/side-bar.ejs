@@ -70,16 +70,77 @@
     </div>
 </div>
 
+<!-- Modal de confirmación de venta (ACTUALIZADO) -->
+<div class="modal fade" id="ventaModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Venta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Total a cobrar:</label>
+                    <input type="text" class="form-control" id="totalCobrar" readonly>
+                </div>
+                
+                <!-- Campo para nombre del cliente -->
+                <div class="mb-3">
+                    <label for="nombreCliente" class="form-label">Nombre del Cliente:</label>
+                    <input type="text" class="form-control" id="nombreCliente" placeholder="Opcional">
+                </div>
+                
+                <!-- Select para tipo de pago -->
+                <div class="mb-3">
+                    <label for="tipoPago" class="form-label">Tipo de Pago:</label>
+                    <select class="form-select" id="tipoPago" required>
+                        <option value="" selected disabled>Seleccione tipo de pago...</option>
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Tarjeta Débito">Tarjeta Débito</option>
+                        <option value="Tarjeta Crédito">Tarjeta Crédito</option>
+                        <option value="Transferencia">Transferencia</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+                
+                <!-- Select para plataforma -->
+                <div class="mb-3">
+                    <label for="plataformaPago" class="form-label">Plataforma:</label>
+                    <select class="form-select" id="plataformaPago">
+                        <option value="" selected>Ninguna (para ventas locales)</option>
+                        <option value="Uber">Uber</option>
+                        <option value="Didi">Didi</option>
+                        <option value="Rappi">Rappi</option>
+                        <option value="Otro">Otra plataforma</option>
+                    </select>
+                </div>
+                <div class="mb-3" id="otraPlataformaContainer" style="display: none;">
+                    <label for="otraPlataforma" class="form-label">Especifique plataforma:</label>
+                    <input type="text" class="form-control" id="otraPlataforma">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmarVentaBtn">Registrar Venta</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
     .sidebar {
         width: 250px;
         background: #2c3e50;
         color: white;
         padding: 20px;
-        height: 100%;
+        height: 100vh;
         overflow-y: auto;
         display: flex;
         flex-direction: column;
+        position: fixed;
+        right: 0;
+        top: 0;
+        z-index: 1000;
     }
     .selected-products {
         display: flex;
