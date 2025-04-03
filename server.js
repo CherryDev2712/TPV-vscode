@@ -18,7 +18,7 @@ app.use(express.urlencoded({ extended: true })); // Para formularios HTML
 // Servir archivos estáticos (CSS, JS, imágenes)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 🔥 Configuración de motor de plantillas (EJS)
+// Configuración de motor de plantillas (EJS)
 app.set('view engine', 'ejs'); // Motor EJS
 app.set('views', path.join(__dirname, 'views')); // Carpeta de vistas
 
@@ -34,5 +34,5 @@ app.use((req, res) => {
 
 // Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`✅ Servidor Express escuchando en http://localhost:${PORT}`);
+  console.log(`Servidor test ejecutando en http://localhost:${PORT}`);
 });

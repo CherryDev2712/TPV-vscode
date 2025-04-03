@@ -70,78 +70,168 @@
     </div>
 </div>
 
-<!-- Modal de confirmación de venta (ACTUALIZADO) -->
-<div class="modal fade" id="ventaModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirmar Venta</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label">Total a cobrar:</label>
-                    <input type="text" class="form-control" id="totalCobrar" readonly>
-                </div>
-                
-                <!-- Campo para nombre del cliente -->
-                <div class="mb-3">
-                    <label for="nombreCliente" class="form-label">Nombre del Cliente:</label>
-                    <input type="text" class="form-control" id="nombreCliente" placeholder="Opcional">
-                </div>
-                
-                <!-- Select para tipo de pago -->
-                <div class="mb-3">
-                    <label for="tipoPago" class="form-label">Tipo de Pago:</label>
-                    <select class="form-select" id="tipoPago" required>
-                        <option value="" selected disabled>Seleccione tipo de pago...</option>
-                        <option value="Efectivo">Efectivo</option>
-                        <option value="Tarjeta Débito">Tarjeta Débito</option>
-                        <option value="Tarjeta Crédito">Tarjeta Crédito</option>
-                        <option value="Transferencia">Transferencia</option>
-                        <option value="Otro">Otro</option>
-                    </select>
-                </div>
-                
-                <!-- Select para plataforma -->
-                <div class="mb-3">
-                    <label for="plataformaPago" class="form-label">Plataforma:</label>
-                    <select class="form-select" id="plataformaPago">
-                        <option value="" selected>Ninguna (para ventas locales)</option>
-                        <option value="Uber">Uber</option>
-                        <option value="Didi">Didi</option>
-                        <option value="Rappi">Rappi</option>
-                        <option value="Otro">Otra plataforma</option>
-                    </select>
-                </div>
-                <div class="mb-3" id="otraPlataformaContainer" style="display: none;">
-                    <label for="otraPlataforma" class="form-label">Especifique plataforma:</label>
-                    <input type="text" class="form-control" id="otraPlataforma">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="confirmarVentaBtn">Registrar Venta</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <style>
+.sidebar {
+    width: 300px;
+    background: #2c3e50;
+    color: white;
+    padding: 15px;
+    height: 100vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: 1000;
+}
+
+.selected-products {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin: 15px 0;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.selected-product {
+    background: #34495e;
+    padding: 15px;
+    border-radius: 10px;
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    gap: 12px;
+    align-items: start;
+}
+
+.selected-product-img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.product-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.product-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.product-name {
+    font-weight: bold;
+    font-size: 1rem;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-grow: 1;
+}
+
+.product-price {
+    font-size: 0.9rem;
+    color: #bdc3c7;
+    margin: 5px 0;
+}
+
+.product-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.quantity-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.quantity-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.quantity-btn:hover {
+    background: #218838;
+}
+
+.quantity-value {
+    font-size: 1.1rem;
+    font-weight: bold;
+    min-width: 30px;
+    text-align: center;
+}
+
+.subtotal {
+    font-weight: bold;
+    font-size: 1rem;
+    color: #f8f9fa;
+    white-space: nowrap;
+}
+
+.btn-eliminar {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+.btn-eliminar:hover {
+    background-color: #c82333;
+}
+
+/* Responsive para móviles */
+@media (max-width: 767.98px) {
     .sidebar {
-        width: 250px;
-        background: #2c3e50;
-        color: white;
-        padding: 20px;
-        height: 100vh;
-        overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-        position: fixed;
-        right: 0;
-        top: 0;
-        z-index: 1000;
+        width: 100%;
+        height: auto;
+        max-height: 50vh;
+        bottom: 0;
+        top: auto;
+        left: 0;
+        border-top: 2px solid #34495e;
     }
+    
+    .main-container {
+        padding-bottom: 50vh;
+    }
+    
+    .selected-product {
+        grid-template-columns: 60px 1fr;
+        padding: 12px;
+        gap: 10px;
+    }
+    
+    .selected-product-img {
+        width: 60px;
+        height: 60px;
+    }
+}
+
     .selected-products {
         display: flex;
         flex-direction: column;
@@ -150,6 +240,7 @@
         flex-grow: 1;
         overflow-y: auto;
     }
+    
     .selected-product {
         background: #34495e;
         padding: 10px;
@@ -158,6 +249,7 @@
         justify-content: space-between;
         align-items: center;
     }
+    
     .selected-product img {
         width: 40px;
         height: 40px;
@@ -165,23 +257,28 @@
         border-radius: 4px;
         margin-right: 10px;
     }
+    
     .selected-product-info {
         flex-grow: 1;
     }
+    
     .selected-product-name {
         font-weight: bold;
         margin-bottom: 2px;
     }
+    
     .selected-product-price {
         font-size: 0.8rem;
         color: #ddd;
     }
+    
     .selected-product-quantity {
         display: flex;
         align-items: center;
         gap: 5px;
         margin-top: 5px;
     }
+    
     .quantity-btn {
         background: #28a745;
         color: white;
@@ -194,23 +291,28 @@
         justify-content: center;
         cursor: pointer;
     }
+    
     .quantity-value {
         min-width: 20px;
         text-align: center;
     }
+    
     .sidebar-footer {
         margin-top: auto;
     }
+    
     .total-section {
         padding: 10px;
         background: #34495e;
         border-radius: 5px;
         text-align: right;
     }
+    
     #finalizarVentaBtn:disabled {
         opacity: 0.5;
         cursor: not-allowed;
     }
+    
     .btn-eliminar {
         background-color: #dc3545;
         color: white;
@@ -219,6 +321,7 @@
         border-radius: 4px;
         cursor: pointer;
     }
+    
     .btn-eliminar:hover {
         background-color: #c82333;
     }
@@ -244,18 +347,22 @@
             productElement.classList.add("selected-product");
             productElement.dataset.id = item.producto.id;
             productElement.innerHTML = `
-                <img src="${item.producto.imagenURL}" alt="${item.producto.nombre}">
-                <div class="selected-product-info">
-                    <div class="selected-product-name">${item.producto.nombre}</div>
-                    <div class="selected-product-price">$${item.producto.precio} c/u</div>
-                    <div class="selected-product-quantity">
-                        <button class="quantity-btn decrement" data-id="${item.producto.id}">-</button>
-                        <span class="quantity-value">${item.cantidad}</span>
-                        <button class="quantity-btn increment" data-id="${item.producto.id}">+</button>
+                <img src="${item.producto.imagenURL}" alt="${item.producto.nombre}" class="selected-product-img">
+                <div class="product-details">
+                    <div class="product-header">
+                        <h5 class="product-name">${item.producto.nombre}</h5>
+                        <button class="btn-eliminar" data-id="${item.producto.id}">×</button>
                     </div>
-                    <div class="selected-product-subtotal">Subtotal: $${(item.producto.precio * item.cantidad).toFixed(2)}</div>
+                    <p class="product-price">$${item.producto.precio} c/u</p>
+                    <div class="product-controls">
+                        <div class="quantity-section">
+                            <button class="quantity-btn decrement" data-id="${item.producto.id}">-</button>
+                            <span class="quantity-value">${item.cantidad}</span>
+                            <button class="quantity-btn increment" data-id="${item.producto.id}">+</button>
+                        </div>
+                        <span class="subtotal">$${(item.producto.precio * item.cantidad).toFixed(2)}</span>
+                    </div>
                 </div>
-                <button class="btn-eliminar" data-id="${item.producto.id}">×</button>
             `;
             
             selectedProductsContainer.appendChild(productElement);
