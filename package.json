@@ -6,7 +6,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "say": "say 'bienvenido de vuelta cherry, el sistema se esta ejecutando si no se ejecuta correctamente es por que eres un pendejo'",
+    "init": "npm run say && npm run dev"
   },
   "dependencies": {
     "bootstrap": "^5.3.2",
