@@ -341,8 +341,10 @@
 
     // Función para actualizar el sidebar con los productos
     function actualizarSidebar() {
-        const productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
-        const selectedProductsContainer = document.getElementById("selectedProducts");
+    const productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
+    const selectedProductsContainer = document.getElementById("selectedProducts");
+    
+    if (selectedProductsContainer) {
         selectedProductsContainer.innerHTML = '';
         
         productosSeleccionados.forEach(item => {
@@ -350,7 +352,7 @@
             productElement.classList.add("selected-product");
             productElement.dataset.id = item.producto.id;
             productElement.innerHTML = `
-                <img src="${item.producto.imagenURL}" alt="${item.producto.nombre}" class="selected-product-img">
+                <img src="${item.producto.imagenURL || 'https://via.placeholder.com/150'}" alt="${item.producto.nombre}" class="selected-product-img">
                 <div class="product-details">
                     <div class="product-header">
                         <h5 class="product-name">${item.producto.nombre}</h5>
@@ -359,7 +361,9 @@
                     <p class="product-price">$${item.producto.precio} c/u</p>
                     <div class="product-controls">
                         <div class="quantity-section">
+                            <button class="btn btn-sm btn-outline-secondary decrement">-</button>
                             <span class="quantity-value">${item.cantidad}</span>
+                            <button class="btn btn-sm btn-outline-secondary increment">+</button>
                         </div>
                         <span class="subtotal">$${(item.producto.precio * item.cantidad).toFixed(2)}</span>
                     </div>
@@ -369,23 +373,29 @@
             selectedProductsContainer.appendChild(productElement);
             
             // Eventos para cambiar cantidad
-            productElement.querySelector('.decrement').addEventListener('click', (e) => {
-                e.stopPropagation();
-                actualizarCantidadProducto(item.producto.id, -1);
-            });
+            const decrementBtn = productElement.querySelector('.decrement');
+            const incrementBtn = productElement.querySelector('.increment');
+            const deleteBtn = productElement.querySelector('.btn-eliminar');
             
-            productElement.querySelector('.increment').addEventListener('click', (e) => {
-                e.stopPropagation();
-                actualizarCantidadProducto(item.producto.id, 1);
-            });
-            
-            // Evento para eliminar producto
-            productElement.querySelector('.btn-eliminar').addEventListener('click', (e) => {
-                e.stopPropagation();
-                eliminarProductoDeSidebar(item.producto.id);
-            });
+            if (decrementBtn && incrementBtn && deleteBtn) {
+                decrementBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    actualizarCantidadProducto(item.producto.id, -1);
+                });
+                
+                incrementBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    actualizarCantidadProducto(item.producto.id, 1);
+                });
+                
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    eliminarProductoDeSidebar(item.producto.id);
+                });
+            }
         });
     }
+}
 
     // Función para actualizar el total
     function actualizarTotal() {
