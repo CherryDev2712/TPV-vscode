@@ -478,7 +478,7 @@
                     <h5 class="card-title">${producto.nombre}</h5>
                     <p class="card-text">Precio: $${producto.precio}</p>
                     <div class="card-buttons">
-                        <button class="btn-eliminar" data-id="${producto.id}">Eliminar</button>
+                        <button class="btn-eliminar" data-id="${producto.id}">X</button>
                         <button class="add-to-sidebar" data-id="${producto.id}">Agregar</button>
                     </div>
                 </div>
@@ -599,9 +599,7 @@
                             <div class="selected-product-name">${item.producto.nombre}</div>
                             <div class="selected-product-price">$${item.producto.precio} c/u</div>
                             <div class="selected-product-quantity">
-                                <button class="quantity-btn decrement" data-id="${item.producto.id}">-</button>
                                 <span class="quantity-value">${item.cantidad}</span>
-                                <button class="quantity-btn increment" data-id="${item.producto.id}">+</button>
                             </div>
                             <div class="selected-product-subtotal">Subtotal: $${(item.producto.precio * item.cantidad).toFixed(2)}</div>
                         </div>
