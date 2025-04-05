@@ -4,8 +4,21 @@
         <path d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 0 4 2 2 0 0 0 0-4h7a2 2 0 1 0 0 4 2 2 0 0 0 0-4h1a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1zm3.915 10L3.102 4h10.796l-1.313 7zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0m7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
       </svg></h4>
     <hr>
-    <div class="selected-products" id="selectedProducts">
-        <!-- Los productos seleccionados aparecerán aquí -->
+    <div class="table-responsive">
+        <table class="table table-dark table-hover" id="selectedProductsTable">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Precio</th>
+                    <th>Cantidad</th>
+                    <th>Subtotal</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="selectedProducts">
+                <!-- Los productos seleccionados aparecerán aquí -->
+            </tbody>
+        </table>
     </div>
     <div class="sidebar-footer">
         <hr>
@@ -16,7 +29,7 @@
     </div>
 </div>
 
-<!-- Modal de confirmación de venta (ACTUALIZADO) -->
+<!-- Modal de confirmación de venta -->
 <div class="modal fade" id="ventaModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -75,7 +88,7 @@
 
 <style>
 .sidebar {
-    width: 300px;
+    width: 350px;
     background: #2c3e50;
     color: white;
     padding: 15px;
@@ -89,122 +102,74 @@
     z-index: 1000;
 }
 
-.selected-products {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin: 15px 0;
+.table-responsive {
     flex-grow: 1;
     overflow-y: auto;
+    margin: 15px 0;
 }
 
-.selected-product {
-    background: #34495e;
-    padding: 15px;
-    border-radius: 10px;
-    display: grid;
-    grid-template-columns: 70px 1fr;
-    gap: 12px;
-    align-items: start;
-}
-
-.selected-product-img {
-    width: 70px;
-    height: 70px;
-    object-fit: cover;
-    border-radius: 8px;
-}
-
-.product-details {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    width: 100%;
-}
-
-.product-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 10px;
-}
-
-.product-name {
-    font-weight: bold;
-    font-size: 1rem;
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    flex-grow: 1;
-}
-
-.product-price {
-    font-size: 0.9rem;
-    color: #bdc3c7;
-    margin: 5px 0;
-}
-
-.product-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 8px;
-}
-
-.quantity-section {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.quantity-btn {
-    background: #28a745;
+.table {
     color: white;
-    border: none;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background 0.2s;
+    margin-bottom: 0;
 }
 
-.quantity-btn:hover {
-    background: #218838;
+.table th {
+    border-top: none;
+    font-weight: 500;
+    padding: 10px;
 }
 
-.quantity-value {
-    font-size: 1.1rem;
-    font-weight: bold;
-    min-width: 30px;
-    text-align: center;
+.table td {
+    vertical-align: middle;
+    padding: 10px;
 }
 
-.subtotal {
-    font-weight: bold;
-    font-size: 1rem;
-    color: #f8f9fa;
-    white-space: nowrap;
+.table-hover tbody tr:hover {
+    background-color: #3d5166;
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.quantity-controls button {
+    width: 25px;
+    height: 25px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-eliminar {
     background-color: #dc3545;
     color: white;
     border: none;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    padding: 5px 10px;
+    border-radius: 4px;
     cursor: pointer;
-    transition: background 0.2s;
-    flex-shrink: 0;
 }
 
 .btn-eliminar:hover {
     background-color: #c82333;
+}
+
+.sidebar-footer {
+    margin-top: auto;
+}
+
+.total-section {
+    padding: 10px;
+    background: #34495e;
+    border-radius: 5px;
+    text-align: right;
+}
+
+#finalizarVentaBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* Responsive para móviles */
@@ -223,111 +188,21 @@
         padding-bottom: 50vh;
     }
     
-    .selected-product {
-        grid-template-columns: 60px 1fr;
-        padding: 12px;
-        gap: 10px;
-    }
-    
-    .selected-product-img {
-        width: 60px;
-        height: 60px;
+    .table th, .table td {
+        padding: 8px;
+        font-size: 0.9rem;
     }
 }
 
-    .selected-products {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        margin-top: 15px;
-        flex-grow: 1;
-        overflow-y: auto;
-    }
-    
-    .selected-product {
-        background: #34495e;
-        padding: 10px;
-        border-radius: 5px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .selected-product img {
-        width: 40px;
-        height: 40px;
-        object-fit: cover;
-        border-radius: 4px;
-        margin-right: 10px;
-    }
-    
-    .selected-product-info {
-        flex-grow: 1;
-    }
-    
-    .selected-product-name {
-        font-weight: bold;
-        margin-bottom: 2px;
-    }
-    
-    .selected-product-price {
-        font-size: 0.8rem;
-        color: #ddd;
-    }
-    
-    .selected-product-quantity {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        margin-top: 5px;
-    }
-    
-    .quantity-btn {
-        background: #28a745;
-        color: white;
-        border: none;
-        width: 25px;
-        height: 25px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-    }
-    
-    .quantity-value {
-        min-width: 20px;
-        text-align: center;
-    }
-    
-    .sidebar-footer {
-        margin-top: auto;
-    }
-    
-    .total-section {
-        padding: 10px;
-        background: #34495e;
-        border-radius: 5px;
-        text-align: right;
-    }
-    
-    #finalizarVentaBtn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-    
-    .btn-eliminar {
-        background-color: #dc3545;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-    
-    .btn-eliminar:hover {
-        background-color: #c82333;
-    }
+/* Animación para nuevos productos */
+@keyframes highlight {
+    0% { background-color: rgba(40, 167, 69, 0.7); }
+    100% { background-color: transparent; }
+}
+
+.new-product {
+    animation: highlight 1s ease;
+}
 </style>
 
 <script>
@@ -339,63 +214,56 @@
         actualizarTotal();
     }
 
-    // Función para actualizar el sidebar con los productos
+    // Función para actualizar el sidebar con los productos en formato tabla
     function actualizarSidebar() {
-    const productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
-    const selectedProductsContainer = document.getElementById("selectedProducts");
-    
-    if (selectedProductsContainer) {
-        selectedProductsContainer.innerHTML = '';
+        const productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
+        const selectedProductsContainer = document.getElementById("selectedProducts");
         
-        productosSeleccionados.forEach(item => {
-            const productElement = document.createElement("div");
-            productElement.classList.add("selected-product");
-            productElement.dataset.id = item.producto.id;
-            productElement.innerHTML = `
-                <img src="${item.producto.imagenURL || 'https://via.placeholder.com/150'}" alt="${item.producto.nombre}" class="selected-product-img">
-                <div class="product-details">
-                    <div class="product-header">
-                        <h5 class="product-name">${item.producto.nombre}</h5>
-                        <button class="btn-eliminar" data-id="${item.producto.id}">×</button>
-                    </div>
-                    <p class="product-price">$${item.producto.precio} c/u</p>
-                    <div class="product-controls">
-                        <div class="quantity-section">
+        if (selectedProductsContainer) {
+            selectedProductsContainer.innerHTML = '';
+            
+            productosSeleccionados.forEach(item => {
+                const row = document.createElement("tr");
+                row.dataset.id = item.producto.id;
+                row.innerHTML = `
+                    <td>${item.producto.nombre}</td>
+                    <td>$${item.producto.precio}</td>
+                    <td>
+                        <div class="quantity-controls">
                             <button class="btn btn-sm btn-outline-secondary decrement">-</button>
                             <span class="quantity-value">${item.cantidad}</span>
                             <button class="btn btn-sm btn-outline-secondary increment">+</button>
                         </div>
-                        <span class="subtotal">$${(item.producto.precio * item.cantidad).toFixed(2)}</span>
-                    </div>
-                </div>
-            `;
-            
-            selectedProductsContainer.appendChild(productElement);
-            
-            // Eventos para cambiar cantidad
-            const decrementBtn = productElement.querySelector('.decrement');
-            const incrementBtn = productElement.querySelector('.increment');
-            const deleteBtn = productElement.querySelector('.btn-eliminar');
-            
-            if (decrementBtn && incrementBtn && deleteBtn) {
-                decrementBtn.addEventListener('click', (e) => {
+                    </td>
+                    <td>$${(item.producto.precio * item.cantidad).toFixed(2)}</td>
+                    <td><button class="btn-eliminar" data-id="${item.producto.id}">×</button></td>
+                `;
+                
+                // Resaltar nueva fila
+                row.classList.add('new-product');
+                setTimeout(() => row.classList.remove('new-product'), 1000);
+                
+                selectedProductsContainer.appendChild(row);
+                
+                // Eventos para cambiar cantidad
+                row.querySelector('.decrement').addEventListener('click', (e) => {
                     e.stopPropagation();
                     actualizarCantidadProducto(item.producto.id, -1);
                 });
                 
-                incrementBtn.addEventListener('click', (e) => {
+                row.querySelector('.increment').addEventListener('click', (e) => {
                     e.stopPropagation();
                     actualizarCantidadProducto(item.producto.id, 1);
                 });
                 
-                deleteBtn.addEventListener('click', (e) => {
+                // Evento para eliminar producto
+                row.querySelector('.btn-eliminar').addEventListener('click', (e) => {
                     e.stopPropagation();
                     eliminarProductoDeSidebar(item.producto.id);
                 });
-            }
-        });
+            });
+        }
     }
-}
 
     // Función para actualizar el total
     function actualizarTotal() {

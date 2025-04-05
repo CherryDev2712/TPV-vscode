@@ -24,7 +24,7 @@
         </div>
     </main>
 
-    <!-- Modal para ver detalles de venta (ACTUALIZADO) -->
+    <!-- Modal para ver detalles de venta -->
     <div class="modal fade" id="detalleVentaModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -69,9 +69,50 @@
                     </div>
                 </div>
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="imprimirTicketBtn">
+                        <i class="fas fa-print"></i> Imprimir Ticket
+                    </button>
                     <button type="button" class="btn btn-danger" id="eliminarVentaBtn">Eliminar Venta</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor oculto para el ticket de impresión -->
+    <div id="ticketContainer" style="display: none;">
+        <div class="ticket">
+            <div class="ticket-header text-center">
+                <h4>Ticket de Venta</h4>
+                <p id="ticketFecha"></p>
+            </div>
+            <hr>
+            <div class="ticket-info">
+                <p><strong>Cliente:</strong> <span id="ticketCliente"></span></p>
+                <p><strong>Tipo de pago:</strong> <span id="ticketTipoPago"></span></p>
+                <p><strong>Plataforma:</strong> <span id="ticketPlataforma"></span></p>
+            </div>
+            <hr>
+            <table class="ticket-products">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cant</th>
+                        <th>P.U.</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="ticketProductosBody">
+                    <!-- Productos del ticket -->
+                </tbody>
+            </table>
+            <hr>
+            <div class="ticket-total text-end">
+                <h5>Total: $<span id="ticketTotal"></span></h5>
+            </div>
+            <div class="ticket-footer text-center">
+                <p>¡Gracias por su compra!</p>
+                <p id="ticketCodigo"></p>
             </div>
         </div>
     </div>
@@ -113,7 +154,6 @@
                             <button class="btn btn-sm btn-info ver-detalle-btn me-2" data-index="${index}">
                                 <i class="fas fa-eye"></i> Detalle
                             </button>
-
                         </td>
                     `;
                     ventasTableBody.appendChild(row);
@@ -123,13 +163,6 @@
                 document.querySelectorAll('.ver-detalle-btn').forEach(btn => {
                     btn.addEventListener('click', () => {
                         mostrarDetalleVenta(btn.dataset.index);
-                    });
-                });
-                
-                document.querySelectorAll('.eliminar-venta-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        eliminarVenta(btn.dataset.index);
                     });
                 });
             }
@@ -172,7 +205,132 @@
                     }
                 };
                 
+                // Configurar botón imprimir ticket
+                const imprimirTicketBtn = document.getElementById("imprimirTicketBtn");
+                imprimirTicketBtn.onclick = () => {
+                    prepararTicketParaImpresion(ventaActual);
+                };
+                
                 detalleVentaModal.show();
+            }
+
+            function prepararTicketParaImpresion(venta) {
+                // Llenar datos del ticket
+                document.getElementById("ticketFecha").textContent = formatearFecha(venta.fecha, true);
+                document.getElementById("ticketCliente").textContent = venta.cliente || 'Sin nombre';
+                document.getElementById("ticketTipoPago").textContent = venta.tipoPago;
+                document.getElementById("ticketPlataforma").textContent = venta.plataforma || 'Local';
+                document.getElementById("ticketTotal").textContent = venta.total.toFixed(2);
+                
+                // Generar un código único para el ticket
+                const codigoTicket = 'TKT-' + Date.now().toString().slice(-6);
+                document.getElementById("ticketCodigo").textContent = `Ticket #${codigoTicket}`;
+                
+                // Llenar productos del ticket
+                const ticketProductosBody = document.getElementById("ticketProductosBody");
+                ticketProductosBody.innerHTML = '';
+                
+                venta.productos.forEach(producto => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${producto.nombre}</td>
+                        <td>${producto.cantidad}</td>
+                        <td>$${producto.precioUnitario.toFixed(2)}</td>
+                        <td>$${(producto.precioUnitario * producto.cantidad).toFixed(2)}</td>
+                    `;
+                    ticketProductosBody.appendChild(row);
+                });
+                
+                // Imprimir el ticket
+                imprimirTicket();
+            }
+
+            function imprimirTicket() {
+                const ticketContainer = document.getElementById("ticketContainer");
+                const ventanaImpresion = window.open('', '_blank');
+                
+                // Estilos para el ticket
+                const estilos = `
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            font-size: 12px;
+                            margin: 0;
+                            padding: 10px;
+                        }
+                        .ticket {
+                            width: 80mm;
+                            max-width: 100%;
+                            margin: 0 auto;
+                            padding: 10px;
+                        }
+                        .ticket-header {
+                            margin-bottom: 10px;
+                        }
+                        .ticket-header h4 {
+                            margin: 0;
+                            font-size: 16px;
+                        }
+                        .ticket-info p {
+                            margin: 5px 0;
+                        }
+                        .ticket-products {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin: 10px 0;
+                        }
+                        .ticket-products th, .ticket-products td {
+                            padding: 5px;
+                            text-align: left;
+                            border-bottom: 1px dashed #ccc;
+                        }
+                        .ticket-products th {
+                            border-bottom: 1px solid #000;
+                        }
+                        .ticket-total h5 {
+                            margin: 10px 0;
+                        }
+                        .ticket-footer {
+                            margin-top: 15px;
+                            font-size: 10px;
+                        }
+                        hr {
+                            border: none;
+                            border-top: 1px dashed #000;
+                            margin: 10px 0;
+                        }
+                        @media print {
+                            @page {
+                                size: auto;
+                                margin: 0;
+                            }
+                            body {
+                                padding: 0;
+                            }
+                        }
+                    </style>
+                `;
+                
+                ventanaImpresion.document.write(`
+                    <html>
+                        <head>
+                            <title>Ticket de Venta</title>
+                            ${estilos}
+                        </head>
+                        <body>
+                            ${ticketContainer.innerHTML}
+                            <script>
+                                window.onload = function() {
+                                    window.print();
+                                    setTimeout(function() {
+                                        window.close();
+                                    }, 100);
+                                };
+                            <\/script>
+                        </body>
+                    </html>
+                `);
+                ventanaImpresion.document.close();
             }
 
             function eliminarVenta(index) {

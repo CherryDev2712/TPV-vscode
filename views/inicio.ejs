@@ -14,7 +14,7 @@
             </div>
         </div>
 
-        <!-- Botón flotante para agregar categorías (movido a la izquierda) -->
+        <!-- Botón flotante para agregar categorías -->
         <button class="btn btn-dark btn-content btn-categoria" data-bs-toggle="modal" data-bs-target="#categoriaModal">
             <span><svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-folder-plus" viewBox="0 0 16 16">
                 <path d="m.5 3 .04.87a1.99 1.99 0 0 0-.342 1.311l.637 7A2 2 0 0 0 2.826 14H9v-1H2.826a1 1 0 0 1-.995-.91l-.637-7A1 1 0 0 1 2.19 4h11.62a1 1 0 0 1 .996 1.09L14.54 8h1.005l.256-2.819A2 2 0 0 0 13.81 3H9.828a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 6.172 1H2.5a2 2 0 0 0-2 2zm5.672-1a1 1 0 0 1 .707.293L7.586 3H2.19c-.24 0-.47.042-.683.12L1.5 2.98a1 1 0 0 1 1-.98h3.672z"/>
@@ -22,7 +22,7 @@
               </svg></span>
         </button>
 
-        <!-- Botón flotante para agregar productos (oculto inicialmente) -->
+        <!-- Botón flotante para agregar productos -->
         <button class="btn btn-primary btn-content btn-producto" id="btnAgregarProducto" data-bs-toggle="modal" data-bs-target="#productoModal" style="display: none;">
             <span><svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-bag-plus" viewBox="0 0 16 16">
                 <path fill-rule="evenodd" d="M8 7.5a.5.5 0 0 1 .5.5v1.5H10a.5.5 0 0 1 0 1H8.5V12a.5.5 0 0 1-1 0v-1.5H6a.5.5 0 0 1 0-1h1.5V8a.5.5 0 0 1 .5-.5"/>
@@ -156,7 +156,7 @@
         z-index: 1000;
     }
     .btn-categoria {
-        left: 30px; /* Cambiado de right a left */
+        left: 30px;
     }
     .btn-producto {
         right: 30px;
@@ -191,10 +191,6 @@
     .card-text {
         color: #666;
         font-size: 1rem;
-    }
-    h1 {
-        color: #333;
-        margin-bottom: 20px;
     }
     .btn-eliminar {
         background-color: #dc3545;
@@ -312,6 +308,7 @@
             
             // Resetear y cerrar modal
             categoriaForm.reset();
+            categoriaModal.hide();
         });
 
         // Evento para agregar producto
@@ -341,7 +338,7 @@
             
             // Resetear y cerrar modal
             productoForm.reset();
-
+            productoModal.hide();
         });
 
         // Eventos para cantidad
@@ -473,7 +470,7 @@
             card.classList.add("card");
             card.dataset.id = producto.id;
             card.innerHTML = `
-
+                <img src="${producto.imagenURL}" class="card-img-top" alt="${producto.nombre}">
                 <div class="card-body">
                     <h5 class="card-title">${producto.nombre}</h5>
                     <p class="card-text">Precio: $${producto.precio}</p>
@@ -577,76 +574,28 @@
 
         // Función para actualizar todo el estado
         function actualizarEstadoVenta() {
-    const productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
-    const finalizarVentaBtn = document.getElementById("finalizarVentaBtn");
-    
-    if (finalizarVentaBtn) {
-        finalizarVentaBtn.disabled = productosSeleccionados.length === 0;
-    }
-
-    // Actualizar sidebar
-    const selectedProductsContainer = document.getElementById("selectedProducts");
-    if (selectedProductsContainer) {
-        selectedProductsContainer.innerHTML = '';
-        
-        let total = 0;
-        
-        productosSeleccionados.forEach(item => {
-            total += item.producto.precio * item.cantidad;
+            const productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
+            const finalizarVentaBtn = document.getElementById("finalizarVentaBtn");
             
-            const productElement = document.createElement("div");
-            productElement.classList.add("selected-product");
-            productElement.dataset.id = item.producto.id;
-            productElement.innerHTML = `
-                <div class="selected-product-info">
-                    <div class="selected-product-name">${item.producto.nombre}</div>
-                    <div class="selected-product-price">$${item.producto.precio} c/u</div>
-                    <div class="selected-product-quantity">
-                        <button class="btn btn-sm btn-outline-secondary decrement">-</button>
-                        <span class="quantity-value">${item.cantidad}</span>
-                        <button class="btn btn-sm btn-outline-secondary increment">+</button>
-                    </div>
-                    <div class="selected-product-subtotal">Subtotal: $${(item.producto.precio * item.cantidad).toFixed(2)}</div>
-                </div>
-                <button class="btn-eliminar" data-id="${item.producto.id}">×</button>
-            `;
-            
-            selectedProductsContainer.appendChild(productElement);
-            
-            // Eventos para cambiar cantidad
-            const decrementBtn = productElement.querySelector('.decrement');
-            const incrementBtn = productElement.querySelector('.increment');
-            const deleteBtn = productElement.querySelector('.btn-eliminar');
-            
-            if (decrementBtn) {
-                decrementBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    actualizarCantidadProducto(item.producto.id, -1);
-                });
+            if (finalizarVentaBtn) {
+                finalizarVentaBtn.disabled = productosSeleccionados.length === 0;
             }
             
-            if (incrementBtn) {
-                incrementBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    actualizarCantidadProducto(item.producto.id, 1);
-                });
-            }
-            
-            if (deleteBtn) {
-                deleteBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    eliminarProductoDeSidebar(item.producto.id);
-                });
-            }
-        });
-        
-        // Actualizar total
-        const totalAmountElement = document.getElementById("totalAmount");
-        if (totalAmountElement) {
-            totalAmountElement.textContent = total.toFixed(2);
+            // Actualizar el total
+            actualizarTotal();
         }
-    }
-}
+
+        // Función para actualizar el total
+        function actualizarTotal() {
+            const productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
+            let total = 0;
+            
+            productosSeleccionados.forEach(item => {
+                total += item.producto.precio * item.cantidad;
+            });
+            
+            document.getElementById("totalAmount").textContent = total.toFixed(2);
+        }
 
         // Función para actualizar cantidad de producto
         function actualizarCantidadProducto(productId, cambio) {
