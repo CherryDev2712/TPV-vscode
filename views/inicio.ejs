@@ -1,621 +1,249 @@
 <!DOCTYPE html>
-<%- include('load/head') %>
-<body>
-    <%- include('load/nav') %>
-    <main class="main-container">
-        <%- include('load/side-bar') %>
-        <div class="content">                  
-            <div class="categorias-container" id="categorias">
-                <!-- Las categorías se agregarán aquí dinámicamente -->
-            </div>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Ventas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            width: 350px;
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            height: calc(100vh - 56px);
+            overflow-y: auto;
+            position: fixed;
+            right: 0;
+            top: 56px;
+            z-index: 1000;
+        }
 
-            <div class="producto-container" id="productos" style="display: none;">
-                <!-- Las cards de productos se agregarán aquí dinámicamente -->
+        .main-container {
+            display: flex;
+            height: calc(100vh - 60px);
+            padding-right: 350px;
+        }
+
+        .content {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .categorias-container, .producto-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .categoria-card, .card {
+            width: 250px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .card {
+            flex-direction: column;
+            height: auto;
+            padding: 10px;
+        }
+
+        .btn-content {
+            position: fixed;
+            bottom: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .btn-categoria { left: 30px; }
+        .btn-producto { right: 30px; }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        @media (max-width: 810px) {
+            .sidebar {
+                width: 100%;
+                height: 50vh;
+                top: auto;
+                bottom: 0;
+            }
+            .main-container {
+                padding-right: 0;
+                padding-bottom: 50vh;
+            }
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #3d5166;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <span class="navbar-brand">Sistema de Ventas</span>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h4 class="text-center">Productos Seleccionados</h4>
+            <hr>
+            <div class="table-responsive">
+                <table class="table table-dark table-hover">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Precio</th>
+                            <th>Cantidad</th>
+                            <th>Subtotal</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="selectedProducts">
+                        <tr id="emptyMessage">
+                            <td colspan="5" class="text-center">No hay productos seleccionados</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="sidebar-footer">
+                <hr>
+                <h5>Total: $<span id="totalAmount">0.00</span></h5>
+                <button id="finalizarVentaBtn" class="btn btn-success w-100" disabled 
+                        data-bs-toggle="modal" data-bs-target="#ventaModal">
+                    Finalizar Venta
+                </button>
             </div>
         </div>
 
-        <!-- Botón flotante para agregar categorías -->
-        <button class="btn btn-dark btn-content btn-categoria" data-bs-toggle="modal" data-bs-target="#categoriaModal">
-            <span><svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-folder-plus" viewBox="0 0 16 16">
-                <path d="m.5 3 .04.87a1.99 1.99 0 0 0-.342 1.311l.637 7A2 2 0 0 0 2.826 14H9v-1H2.826a1 1 0 0 1-.995-.91l-.637-7A1 1 0 0 1 2.19 4h11.62a1 1 0 0 1 .996 1.09L14.54 8h1.005l.256-2.819A2 2 0 0 0 13.81 3H9.828a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 6.172 1H2.5a2 2 0 0 0-2 2zm5.672-1a1 1 0 0 1 .707.293L7.586 3H2.19c-.24 0-.47.042-.683.12L1.5 2.98a1 1 0 0 1 1-.98h3.672z"/>
-                <path d="M13.5 10a.5.5 0 0 1 .5.5V12h1.5a.5.5 0 1 1 0 1H14v1.5a.5.5 0 1 1-1 0V13h-1.5a.5.5 0 0 1 0-1H13v-1.5a.5.5 0 0 1 .5-.5z"/>
-              </svg></span>
-        </button>
+        <!-- Contenido principal -->
+        <div class="content">
+            <div class="categorias-container" id="categorias"></div>
+            <div class="producto-container" id="productos" style="display: none;"></div>
+        </div>
 
-        <!-- Botón flotante para agregar productos -->
-        <button class="btn btn-primary btn-content btn-producto" id="btnAgregarProducto" data-bs-toggle="modal" data-bs-target="#productoModal" style="display: none;">
-            <span><svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-bag-plus" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M8 7.5a.5.5 0 0 1 .5.5v1.5H10a.5.5 0 0 1 0 1H8.5V12a.5.5 0 0 1-1 0v-1.5H6a.5.5 0 0 1 0-1h1.5V8a.5.5 0 0 1 .5-.5"/>
-                <path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1m3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4zM2 5h12v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/>
-              </svg></span>
+        <!-- Botones flotantes -->
+        <button class="btn btn-dark btn-content btn-categoria" data-bs-toggle="modal" data-bs-target="#categoriaModal">
+            +
+        </button>
+        <button class="btn btn-primary btn-content btn-producto" id="btnAgregarProducto" 
+                data-bs-toggle="modal" data-bs-target="#productoModal" style="display: none;">
+            +
         </button>
     </main>
 
-    <!-- Modal para añadir categoría -->
-    <div class="modal fade" id="categoriaModal" tabindex="-1" aria-labelledby="categoriaModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="categoriaModalLabel">Añadir Categoría</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="categoriaForm">
-                        <div class="mb-3">
-                            <label for="nombreCategoria" class="form-label">Nombre de la categoría</label>
-                            <input type="text" class="form-control" id="nombreCategoria" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Guardar</button>
-                    </form>
-                </div>
-            </div>
-        </div>
+    <!-- Modals -->
+    <div class="modal fade" id="categoriaModal">
+        <!-- Contenido del modal de categoría -->
     </div>
 
-    <!-- Modal para añadir producto -->
-    <div class="modal fade" id="productoModal" tabindex="-1" aria-labelledby="productoModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="productoModalLabel">Añadir Producto</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="productoForm">
-                        <div class="mb-3">
-                            <label for="categoriaProducto" class="form-label">Categoría</label>
-                            <select class="form-select" id="categoriaProducto" required>
-                                <option value="" selected disabled>Seleccione una categoría</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="nombreProducto" class="form-label">Nombre del producto</label>
-                            <input type="text" class="form-control" id="nombreProducto" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="precioProducto" class="form-label">Precio</label>
-                            <input type="number" class="form-control" id="precioProducto" min="0" step="0.01" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="imagenProducto" class="form-label">Imagen del producto</label>
-                            <input type="file" class="form-control" id="imagenProducto" accept="image/*">
-                        </div>
-                        <button type="submit" class="btn btn-primary">Guardar</button>
-                    </form>
-                </div>
-            </div>
-        </div>
+    <div class="modal fade" id="productoModal">
+        <!-- Contenido del modal de producto -->
     </div>
 
-    <!-- Modal para seleccionar cantidad -->
-    <div class="modal fade" id="cantidadModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Seleccionar cantidad</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="quantity-selector">
-                        <button class="btn btn-outline-secondary" id="decrementQuantity">-</button>
-                        <input type="number" id="productQuantity" value="1" min="1" class="form-control text-center">
-                        <button class="btn btn-outline-secondary" id="incrementQuantity">+</button>
-                    </div>
-                    <button id="confirmAddToSidebar" class="btn btn-primary mt-3">Agregar</button>
-                </div>
-            </div>
-        </div>
+    <div class="modal fade" id="cantidadModal">
+        <!-- Contenido del modal de cantidad -->
     </div>
 
-    <!-- Bootstrap JS -->
+    <div class="modal fade" id="ventaModal">
+        <!-- Contenido del modal de venta -->
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Gestión de productos seleccionados
+            let productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
+            
+            function actualizarSidebar() {
+    const tbody = document.getElementById("selectedProducts");
+    const totalElement = document.getElementById("totalAmount");
+    const emptyMessage = document.getElementById("emptyMessage");
+    
+    tbody.innerHTML = '';
+    let total = 0;
+    
+    if (productosSeleccionados.length === 0) {
+        emptyMessage.style.display = 'table-row';
+        document.getElementById("finalizarVentaBtn").disabled = true;
+        totalElement.textContent = '0.00';
+        return;
+    }
+    
+    emptyMessage.style.display = 'none';
+    productosSeleccionados.forEach(item => {
+        // Convertir precio a número
+        const precio = Number(item.producto.precio);
+        const subtotal = precio * item.cantidad;
+        total += subtotal;
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${item.producto.nombre}</td>
+            <td>$${precio.toFixed(2)}</td>
+            <td>
+                <div class="quantity-controls">
+                    <button class="btn btn-sm btn-outline-secondary decrement">-</button>
+                    <span>${item.cantidad}</span>
+                    <button class="btn btn-sm btn-outline-secondary increment">+</button>
+                </div>
+            </td>
+            <td>$${subtotal.toFixed(2)}</td>
+            <td><button class="btn btn-danger btn-sm btn-eliminar">×</button></td>
+        `;
+        
+        tr.querySelector('.decrement').addEventListener('click', () => actualizarCantidad(item.producto.id, -1));
+        tr.querySelector('.increment').addEventListener('click', () => actualizarCantidad(item.producto.id, 1));
+        tr.querySelector('.btn-eliminar').addEventListener('click', () => eliminarProducto(item.producto.id));
+        
+        tbody.appendChild(tr);
+    });
+    
+    totalElement.textContent = total.toFixed(2);
+    document.getElementById("finalizarVentaBtn").disabled = false;
+    localStorage.setItem('productosSeleccionados', JSON.stringify(productosSeleccionados));
+}
+
+            function actualizarCantidad(id, cambio) {
+                const index = productosSeleccionados.findIndex(item => item.producto.id === id);
+                if (index >= 0) {
+                    productosSeleccionados[index].cantidad += cambio;
+                    if (productosSeleccionados[index].cantidad < 1) {
+                        productosSeleccionados.splice(index, 1);
+                    }
+                    actualizarSidebar();
+                }
+            }
+
+            function eliminarProducto(id) {
+                productosSeleccionados = productosSeleccionados.filter(item => item.producto.id !== id);
+                actualizarSidebar();
+            }
+
+            // Inicializar
+            actualizarSidebar();
+        });
+    </script>
 </body>
 </html>
-
-<style>
-    body {
-        margin: 0;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        font-family: Arial, sans-serif;
-    }
-    .main-container {
-        display: flex;
-        height: calc(100vh - 60px);
-    }
-    .content {
-        flex-grow: 1;
-        padding: 20px;
-        overflow-y: auto;
-        border-radius: 20px;
-        background-color: #f8f9fa;
-    }
-    .categorias-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        margin-top: 20px;
-    }
-    .producto-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        margin-top: 20px;
-    }
-    .btn-content {
-        position: fixed;
-        bottom: 30px;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        font-size: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-    }
-    .btn-categoria {
-        left: 30px;
-    }
-    .btn-producto {
-        right: 30px;
-    }
-    .card {
-        margin: 10px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        background: white;
-        transition: transform 0.2s;
-        width: 18rem;
-        cursor: pointer;
-    }
-    .card:hover {
-        transform: translateY(-5px);
-    }
-    .card-img-top {
-        height: 180px;
-        object-fit: cover;
-        border-top-left-radius: 8px;
-        border-top-right-radius: 8px;
-    }
-    .card-body {
-        padding: 15px;
-    }
-    .card-title {
-        font-size: 1.2rem;
-        margin-bottom: 10px;
-        color: #333;
-    }
-    .card-text {
-        color: #666;
-        font-size: 1rem;
-    }
-    .btn-eliminar {
-        background-color: #dc3545;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 4px;
-        cursor: pointer;
-        margin-right: 5px;
-    }
-    .btn-eliminar:hover {
-        background-color: #c82333;
-    }
-    .add-to-sidebar {
-        background-color: #28a745;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 4px;
-        cursor: pointer;
-        margin-top: 10px;
-    }
-    .add-to-sidebar:hover {
-        background-color: #218838;
-    }
-    .card-buttons {
-        display: flex;
-        justify-content: space-between;
-    }
-    .quantity-selector {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-    }
-    .quantity-selector input {
-        max-width: 70px;
-    }
-    .categoria-card {
-        width: 200px;
-        height: 120px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #fff;
-        border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
-    .categoria-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-    .categoria-card h3 {
-        margin: 0;
-        color: #333;
-    }
-    .back-button {
-        margin-bottom: 20px;
-        cursor: pointer;
-        color: #0d6efd;
-        display: inline-flex;
-        align-items: center;
-    }
-    .back-button:hover {
-        text-decoration: underline;
-    }
-</style>
-
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        // Elementos principales
-        const categoriaForm = document.getElementById("categoriaForm");
-        const productoForm = document.getElementById("productoForm");
-        const categoriasContainer = document.getElementById("categorias");
-        const productoContainer = document.getElementById("productos");
-        const categoriaModal = new bootstrap.Modal(document.getElementById('categoriaModal'));
-        const productoModal = new bootstrap.Modal(document.getElementById('productoModal'));
-        const cantidadModal = new bootstrap.Modal(document.getElementById('cantidadModal'));
-        const btnAgregarProducto = document.getElementById("btnAgregarProducto");
-        const categoriaProductoSelect = document.getElementById("categoriaProducto");
-        
-        // Elementos para cantidad
-        const productQuantityInput = document.getElementById("productQuantity");
-        const decrementQuantityBtn = document.getElementById("decrementQuantity");
-        const incrementQuantityBtn = document.getElementById("incrementQuantity");
-        const confirmAddToSidebarBtn = document.getElementById("confirmAddToSidebar");
-        
-        // Variables de estado
-        let currentProduct = null;
-        let currentQuantity = 1;
-        let currentCategory = null;
-        
-        // Cargar categorías al iniciar
-        cargarCategorias();
-
-        // Evento para agregar categoría
-        categoriaForm.addEventListener("submit", (event) => {
-            event.preventDefault();
-
-            const nombre = document.getElementById("nombreCategoria").value;
-
-            // Crear objeto categoría
-            const categoria = {
-                id: Date.now(), // ID único
-                nombre: nombre
-            };
-
-            // Guardar en localStorage
-            guardarCategoria(categoria);
-            
-            // Crear y mostrar la card de categoría
-            crearCardCategoria(categoria);
-            
-            // Resetear y cerrar modal
-            categoriaForm.reset();
-            categoriaModal.hide();
-        });
-
-        // Evento para agregar producto
-        productoForm.addEventListener("submit", (event) => {
-            event.preventDefault();
-
-            const categoriaId = parseInt(document.getElementById("categoriaProducto").value);
-            const nombre = document.getElementById("nombreProducto").value;
-            const precio = parseFloat(document.getElementById("precioProducto").value).toFixed(2);
-            const imagenInput = document.getElementById("imagenProducto");
-            const imagenURL = imagenInput.files.length > 0 ? URL.createObjectURL(imagenInput.files[0]) : "https://via.placeholder.com/150";
-
-            // Crear objeto producto
-            const producto = {
-                id: Date.now(), // ID único
-                categoriaId: categoriaId,
-                nombre: nombre,
-                precio: precio,
-                imagenURL: imagenURL
-            };
-
-            // Guardar en localStorage
-            guardarProducto(producto);
-            
-            // Crear y mostrar la card
-            crearCardProducto(producto);
-            
-            // Resetear y cerrar modal
-            productoForm.reset();
-            productoModal.hide();
-        });
-
-        // Eventos para cantidad
-        decrementQuantityBtn.addEventListener("click", () => {
-            if (currentQuantity > 1) {
-                currentQuantity--;
-                productQuantityInput.value = currentQuantity;
-            }
-        });
-        
-        incrementQuantityBtn.addEventListener("click", () => {
-            currentQuantity++;
-            productQuantityInput.value = currentQuantity;
-        });
-        
-        productQuantityInput.addEventListener("change", (e) => {
-            currentQuantity = Math.max(1, parseInt(e.target.value) || 1);
-            productQuantityInput.value = currentQuantity;
-        });
-        
-        confirmAddToSidebarBtn.addEventListener("click", () => {
-            cantidadModal.hide();
-            if (currentProduct) {
-                agregarProductoASidebar(currentProduct, currentQuantity);
-                currentProduct = null;
-                currentQuantity = 1;
-                productQuantityInput.value = 1;
-            }
-        });
-
-        // Función para guardar categoría
-        function guardarCategoria(categoria) {
-            let categorias = JSON.parse(localStorage.getItem('categorias')) || [];
-            categorias.push(categoria);
-            localStorage.setItem('categorias', JSON.stringify(categorias));
-        }
-
-        // Función para guardar producto
-        function guardarProducto(producto) {
-            let productos = JSON.parse(localStorage.getItem('productos')) || [];
-            productos.push(producto);
-            localStorage.setItem('productos', JSON.stringify(productos));
-        }
-
-        // Función para cargar categorías
-        function cargarCategorias() {
-            const categorias = JSON.parse(localStorage.getItem('categorias')) || [];
-            categorias.forEach(categoria => {
-                crearCardCategoria(categoria);
-            });
-            actualizarSelectCategorias();
-        }
-
-        // Función para cargar productos de una categoría
-        function cargarProductos(categoriaId) {
-            const productos = JSON.parse(localStorage.getItem('productos')) || [];
-            productoContainer.innerHTML = '';
-            
-            productos.filter(p => p.categoriaId === categoriaId).forEach(producto => {
-                crearCardProducto(producto);
-            });
-        }
-
-        // Función para actualizar el select de categorías en el modal de producto
-        function actualizarSelectCategorias() {
-            const categorias = JSON.parse(localStorage.getItem('categorias')) || [];
-            categoriaProductoSelect.innerHTML = '<option value="" selected disabled>Seleccione una categoría</option>';
-            
-            categorias.forEach(categoria => {
-                const option = document.createElement('option');
-                option.value = categoria.id;
-                option.textContent = categoria.nombre;
-                categoriaProductoSelect.appendChild(option);
-            });
-        }
-
-        // Función para crear card de categoría
-        function crearCardCategoria(categoria) {
-            const card = document.createElement("div");
-            card.classList.add("categoria-card");
-            card.dataset.id = categoria.id;
-            card.innerHTML = `
-                <h3>${categoria.nombre}</h3>
-            `;
-            
-            categoriasContainer.appendChild(card);
-            
-            // Evento para mostrar productos de esta categoría
-            card.addEventListener('click', () => {
-                currentCategory = categoria;
-                categoriasContainer.style.display = 'none';
-                productoContainer.style.display = 'flex';
-                btnAgregarProducto.style.display = 'flex';
-                
-                // Agregar botón de volver
-                const backButton = document.createElement('div');
-                backButton.classList.add('back-button');
-                backButton.innerHTML = `
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16" style="margin-right: 5px;">
-                        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
-                    </svg>
-                    Volver a categorías
-                `;
-                
-                backButton.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    volverACategorias();
-                });
-                
-                productoContainer.parentNode.insertBefore(backButton, productoContainer);
-                
-                // Cargar productos de esta categoría
-                cargarProductos(categoria.id);
-            });
-        }
-
-        // Función para volver a la vista de categorías
-        function volverACategorias() {
-            currentCategory = null;
-            document.querySelector('.back-button').remove();
-            categoriasContainer.style.display = 'flex';
-            productoContainer.style.display = 'none';
-            btnAgregarProducto.style.display = 'none';
-        }
-
-        // Función para crear card de producto
-        function crearCardProducto(producto) {
-            const card = document.createElement("div");
-            card.classList.add("card");
-            card.dataset.id = producto.id;
-            card.innerHTML = `
-                <img src="${producto.imagenURL}" class="card-img-top" alt="${producto.nombre}">
-                <div class="card-body">
-                    <h5 class="card-title">${producto.nombre}</h5>
-                    <p class="card-text">Precio: $${producto.precio}</p>
-                    <div class="card-buttons">
-                        <button class="btn-eliminar" data-id="${producto.id}">X</button>
-                        <button class="add-to-sidebar" data-id="${producto.id}">Agregar</button>
-                    </div>
-                </div>
-            `;
-            
-            productoContainer.appendChild(card);
-            
-            // Evento para eliminar producto
-            card.querySelector('.btn-eliminar').addEventListener('click', (e) => {
-                e.stopPropagation();
-                eliminarProducto(producto.id, card);
-            });
-            
-            // Evento para agregar al sidebar
-            card.querySelector('.add-to-sidebar').addEventListener('click', (e) => {
-                e.stopPropagation();
-                currentProduct = producto;
-                currentQuantity = 1;
-                productQuantityInput.value = 1;
-                cantidadModal.show();
-            });
-        }
-
-        // Función para eliminar categoría
-        function eliminarCategoria(id, cardElement) {
-            if (confirm('¿Estás seguro de eliminar esta categoría y todos sus productos?')) {
-                // Eliminar del localStorage
-                let categorias = JSON.parse(localStorage.getItem('categorias')) || [];
-                categorias = categorias.filter(categoria => categoria.id !== id);
-                localStorage.setItem('categorias', JSON.stringify(categorias));
-                
-                // Eliminar productos asociados
-                let productos = JSON.parse(localStorage.getItem('productos')) || [];
-                productos = productos.filter(producto => producto.categoriaId !== id);
-                localStorage.setItem('productos', JSON.stringify(productos));
-                
-                // Eliminar del DOM
-                cardElement.remove();
-                
-                // Actualizar select de categorías
-                actualizarSelectCategorias();
-                
-                // Eliminar también del sidebar si hay productos de esta categoría
-                let productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
-                productosSeleccionados = productosSeleccionados.filter(item => item.producto.categoriaId !== id);
-                localStorage.setItem('productosSeleccionados', JSON.stringify(productosSeleccionados));
-                actualizarEstadoVenta();
-            }
-        }
-
-        // Función para eliminar producto
-        function eliminarProducto(id, cardElement) {
-            if (confirm('¿Estás seguro de eliminar este producto?')) {
-                // Eliminar del localStorage
-                let productos = JSON.parse(localStorage.getItem('productos')) || [];
-                productos = productos.filter(producto => producto.id !== id);
-                localStorage.setItem('productos', JSON.stringify(productos));
-                
-                // Eliminar del DOM
-                cardElement.remove();
-                
-                // Eliminar también del sidebar si está allí
-                eliminarProductoDeSidebar(id);
-            }
-        }
-
-        // Función para agregar producto al sidebar
-        function agregarProductoASidebar(producto, cantidad) {
-            let productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
-            
-            // Buscar si el producto ya está en la lista
-            const existingItemIndex = productosSeleccionados.findIndex(item => item.producto.id === producto.id);
-            
-            if (existingItemIndex >= 0) {
-                // Si ya existe, actualizar la cantidad
-                productosSeleccionados[existingItemIndex].cantidad += cantidad;
-            } else {
-                // Si no existe, agregarlo
-                productosSeleccionados.push({
-                    producto: producto,
-                    cantidad: cantidad
-                });
-            }
-            
-            localStorage.setItem('productosSeleccionados', JSON.stringify(productosSeleccionados));
-            actualizarEstadoVenta();
-        }
-
-        // Función para eliminar producto del sidebar
-        function eliminarProductoDeSidebar(id) {
-            let productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
-            productosSeleccionados = productosSeleccionados.filter(item => item.producto.id !== id);
-            localStorage.setItem('productosSeleccionados', JSON.stringify(productosSeleccionados));
-            actualizarEstadoVenta();
-        }
-
-        // Función para actualizar todo el estado
-        function actualizarEstadoVenta() {
-            const productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
-            const finalizarVentaBtn = document.getElementById("finalizarVentaBtn");
-            
-            if (finalizarVentaBtn) {
-                finalizarVentaBtn.disabled = productosSeleccionados.length === 0;
-            }
-            
-            // Actualizar el total
-            actualizarTotal();
-        }
-
-        // Función para actualizar el total
-        function actualizarTotal() {
-            const productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
-            let total = 0;
-            
-            productosSeleccionados.forEach(item => {
-                total += item.producto.precio * item.cantidad;
-            });
-            
-            document.getElementById("totalAmount").textContent = total.toFixed(2);
-        }
-
-        // Función para actualizar cantidad de producto
-        function actualizarCantidadProducto(productId, cambio) {
-            let productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
-            const itemIndex = productosSeleccionados.findIndex(item => item.producto.id === productId);
-            
-            if (itemIndex >= 0) {
-                productosSeleccionados[itemIndex].cantidad += cambio;
-                
-                // Eliminar si la cantidad es cero o menos
-                if (productosSeleccionados[itemIndex].cantidad <= 0) {
-                    productosSeleccionados.splice(itemIndex, 1);
-                }
-                
-                localStorage.setItem('productosSeleccionados', JSON.stringify(productosSeleccionados));
-                actualizarEstadoVenta();
-            }
-        }
-
-        // Inicializar estado
-        actualizarEstadoVenta();
-    });
-</script>

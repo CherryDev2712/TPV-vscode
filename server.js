@@ -2,14 +2,14 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import routes from './src/routes/routes.js'; // Importar rutas
+import router from './src/routes/routes.js'; // Importar rutas
 
 // Obtener __dirname en ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3001; // Use environment variable or fallback to 3001
+const PORT = 8000; // Cambiado a 8000
 
 // Configuración de middleware
 app.use(express.json());
@@ -23,7 +23,7 @@ app.set('view engine', 'ejs'); // Motor EJS
 app.set('views', path.join(__dirname, 'views')); // Carpeta de vistas
 
 // Usar rutas importadas
-app.use('/', routes);
+app.use('/', router);
 
 // Manejo de errores para rutas no encontradas (404)
 app.use((req, res) => {

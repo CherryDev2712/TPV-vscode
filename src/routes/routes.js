@@ -1,11 +1,13 @@
-import { Router } from 'express';
-
-const router = Router();
+import express from 'express';
+import path from 'path';
+const router = express.Router();
 
 router.get('/', (req, res) => {
-  res.render('inicio',
-        {titulo: 'TPV | inicio'}
-    )
+    console.log('Ruta / ejecutada');
+    res.render('inicio', { 
+        productosSeleccionados: [], 
+        titulo: 'TPV | Inicio' // Agrega la variable titulo
+    });
 });
 
 router.get('/productos', (req, res) => {
@@ -19,5 +21,7 @@ router.get('/ventas', (req, res) => {
     {titulo: 'TPV | ventas'}
   )
 })
+
+
 
 export default router;
