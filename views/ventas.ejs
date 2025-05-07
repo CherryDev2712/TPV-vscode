@@ -1,5 +1,11 @@
 <!DOCTYPE html>
 <%- include('load/head') %>
+<style>
+    .table-responsive {
+        border-radius: 10px;
+        
+    }
+</style>
 <body>
     <%- include('load/nav') %>
     <main class="container mt-4">
@@ -18,7 +24,7 @@
                         <th>Acciones</th>
                     </tr>
                 </thead>
-                <tbody id="ventasTableBody">
+                <tbody id="ventasTableBody" class="table-body-1">
                     <!-- Ejemplo de fila -->
                     <tr>
                         <td>25/10/2023 15:30</td>
