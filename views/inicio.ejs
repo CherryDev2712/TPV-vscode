@@ -268,8 +268,6 @@
         const productoForm = document.getElementById("productoForm");
         const categoriasContainer = document.getElementById("categorias");
         const productoContainer = document.getElementById("productos");
-        const categoriaModal = new bootstrap.Modal(document.getElementById('categoriaModal'));
-        const productoModal = new bootstrap.Modal(document.getElementById('productoModal'));
         const cantidadModal = new bootstrap.Modal(document.getElementById('cantidadModal'));
         const btnAgregarProducto = document.getElementById("btnAgregarProducto");
         const categoriaProductoSelect = document.getElementById("categoriaProducto");
@@ -284,69 +282,52 @@
         let currentProduct = null;
         let currentQuantity = 1;
         let currentCategory = null;
-        
-        // Cargar categorías al iniciar
-        cargarCategorias();
 
-        // Evento para agregar categoría
+        // Sistema de actualización dinámica
+        function actualizarSidebar() {
+            const event = new CustomEvent('actualizarSidebar');
+            document.dispatchEvent(event);
+        }
+
+        // Evento para agregar categoría (mantenido igual)
         categoriaForm.addEventListener("submit", (event) => {
             event.preventDefault();
-
             const nombre = document.getElementById("nombreCategoria").value;
-
-            // Crear objeto categoría
-            const categoria = {
-                id: Date.now(), // ID único
-                nombre: nombre
-            };
-
-            // Guardar en localStorage
+            const categoria = { id: Date.now(), nombre: nombre };
+            
             guardarCategoria(categoria);
-            
-            // Crear y mostrar la card de categoría
             crearCardCategoria(categoria);
-            
-            // Resetear y cerrar modal
             categoriaForm.reset();
-            categoriaModal.hide();
+            new bootstrap.Modal(document.getElementById('categoriaModal')).hide();
         });
 
-        // Evento para agregar producto
+        // Evento para agregar producto (modificado para tipos numéricos)
         productoForm.addEventListener("submit", (event) => {
             event.preventDefault();
-
             const categoriaId = parseInt(document.getElementById("categoriaProducto").value);
             const nombre = document.getElementById("nombreProducto").value;
-            const precio = parseFloat(document.getElementById("precioProducto").value).toFixed(2);
+            const precio = parseFloat(document.getElementById("precioProducto").value);
             const imagenInput = document.getElementById("imagenProducto");
             const imagenURL = imagenInput.files.length > 0 ? URL.createObjectURL(imagenInput.files[0]) : "https://via.placeholder.com/150";
 
-            // Crear objeto producto
             const producto = {
-                id: Date.now(), // ID único
+                id: Date.now(),
                 categoriaId: categoriaId,
                 nombre: nombre,
                 precio: precio,
                 imagenURL: imagenURL
             };
 
-            // Guardar en localStorage
             guardarProducto(producto);
-            
-            // Crear y mostrar la card
             crearCardProducto(producto);
-            
-            // Resetear y cerrar modal
             productoForm.reset();
-            productoModal.hide();
+            new bootstrap.Modal(document.getElementById('productoModal')).hide();
         });
 
-        // Eventos para cantidad
+        // Eventos para cantidad (mantenidos igual)
         decrementQuantityBtn.addEventListener("click", () => {
-            if (currentQuantity > 1) {
-                currentQuantity--;
-                productQuantityInput.value = currentQuantity;
-            }
+            if (currentQuantity > 1) currentQuantity--;
+            productQuantityInput.value = currentQuantity;
         });
         
         incrementQuantityBtn.addEventListener("click", () => {
@@ -369,44 +350,45 @@
             }
         });
 
-        // Función para guardar categoría
+        // Funciones principales (actualizadas para sincronización)
         function guardarCategoria(categoria) {
             let categorias = JSON.parse(localStorage.getItem('categorias')) || [];
             categorias.push(categoria);
             localStorage.setItem('categorias', JSON.stringify(categorias));
+            actualizarSelectCategorias();
         }
 
-        // Función para guardar producto
         function guardarProducto(producto) {
             let productos = JSON.parse(localStorage.getItem('productos')) || [];
             productos.push(producto);
             localStorage.setItem('productos', JSON.stringify(productos));
         }
 
-        // Función para cargar categorías
         function cargarCategorias() {
             const categorias = JSON.parse(localStorage.getItem('categorias')) || [];
-            categorias.forEach(categoria => {
-                crearCardCategoria(categoria);
-            });
+            categorias.forEach(crearCardCategoria);
             actualizarSelectCategorias();
         }
 
-        // Función para cargar productos de una categoría
         function cargarProductos(categoriaId) {
             const productos = JSON.parse(localStorage.getItem('productos')) || [];
+            
+            // Convertir precios a números
+            const productosParseados = productos.map(p => ({
+                ...p,
+                precio: typeof p.precio === 'string' ? parseFloat(p.precio) : p.precio
+            }));
+            
             productoContainer.innerHTML = '';
             
-            productos.filter(p => p.categoriaId === categoriaId).forEach(producto => {
+            productosParseados.filter(p => p.categoriaId === categoriaId).forEach(producto => {
                 crearCardProducto(producto);
             });
         }
 
-        // Función para actualizar el select de categorías en el modal de producto
         function actualizarSelectCategorias() {
             const categorias = JSON.parse(localStorage.getItem('categorias')) || [];
             categoriaProductoSelect.innerHTML = '<option value="" selected disabled>Seleccione una categoría</option>';
-            
             categorias.forEach(categoria => {
                 const option = document.createElement('option');
                 option.value = categoria.id;
@@ -415,25 +397,18 @@
             });
         }
 
-        // Función para crear card de categoría
         function crearCardCategoria(categoria) {
             const card = document.createElement("div");
             card.classList.add("categoria-card");
             card.dataset.id = categoria.id;
-            card.innerHTML = `
-                <h3>${categoria.nombre}</h3>
-            `;
+            card.innerHTML = `<h3>${categoria.nombre}</h3>`;
             
-            categoriasContainer.appendChild(card);
-            
-            // Evento para mostrar productos de esta categoría
             card.addEventListener('click', () => {
                 currentCategory = categoria;
                 categoriasContainer.style.display = 'none';
                 productoContainer.style.display = 'flex';
                 btnAgregarProducto.style.display = 'flex';
                 
-                // Agregar botón de volver
                 const backButton = document.createElement('div');
                 backButton.classList.add('back-button');
                 backButton.innerHTML = `
@@ -449,13 +424,12 @@
                 });
                 
                 productoContainer.parentNode.insertBefore(backButton, productoContainer);
-                
-                // Cargar productos de esta categoría
                 cargarProductos(categoria.id);
             });
+            
+            categoriasContainer.appendChild(card);
         }
 
-        // Función para volver a la vista de categorías
         function volverACategorias() {
             currentCategory = null;
             document.querySelector('.back-button').remove();
@@ -464,16 +438,21 @@
             btnAgregarProducto.style.display = 'none';
         }
 
-        // Función para crear card de producto
         function crearCardProducto(producto) {
             const card = document.createElement("div");
             card.classList.add("card");
             card.dataset.id = producto.id;
+            
+            // Asegurar que el precio sea número
+            const precio = typeof producto.precio === 'string' ? 
+                        parseFloat(producto.precio) : 
+                        producto.precio;
+
             card.innerHTML = `
                 <img src="${producto.imagenURL}" class="card-img-top" alt="${producto.nombre}">
                 <div class="card-body">
                     <h5 class="card-title">${producto.nombre}</h5>
-                    <p class="card-text">Precio: $${producto.precio}</p>
+                    <p class="card-text">Precio: $${precio.toFixed(2)}</p>
                     <div class="card-buttons">
                         <button class="btn-eliminar" data-id="${producto.id}">X</button>
                         <button class="add-to-sidebar" data-id="${producto.id}">Agregar</button>
@@ -481,141 +460,77 @@
                 </div>
             `;
             
-            productoContainer.appendChild(card);
-            
-            // Evento para eliminar producto
             card.querySelector('.btn-eliminar').addEventListener('click', (e) => {
                 e.stopPropagation();
                 eliminarProducto(producto.id, card);
             });
             
-            // Evento para agregar al sidebar
             card.querySelector('.add-to-sidebar').addEventListener('click', (e) => {
                 e.stopPropagation();
-                currentProduct = producto;
+                currentProduct = { ...producto, precio: parseFloat(producto.precio) };
                 currentQuantity = 1;
                 productQuantityInput.value = 1;
                 cantidadModal.show();
             });
+            
+            productoContainer.appendChild(card);
         }
 
-        // Función para eliminar categoría
         function eliminarCategoria(id, cardElement) {
-            if (confirm('¿Estás seguro de eliminar esta categoría y todos sus productos?')) {
-                // Eliminar del localStorage
+            if (confirm('¿Eliminar esta categoría y todos sus productos?')) {
                 let categorias = JSON.parse(localStorage.getItem('categorias')) || [];
-                categorias = categorias.filter(categoria => categoria.id !== id);
+                categorias = categorias.filter(c => c.id !== id);
                 localStorage.setItem('categorias', JSON.stringify(categorias));
                 
-                // Eliminar productos asociados
                 let productos = JSON.parse(localStorage.getItem('productos')) || [];
-                productos = productos.filter(producto => producto.categoriaId !== id);
+                productos = productos.filter(p => p.categoriaId !== id);
                 localStorage.setItem('productos', JSON.stringify(productos));
                 
-                // Eliminar del DOM
                 cardElement.remove();
-                
-                // Actualizar select de categorías
                 actualizarSelectCategorias();
-                
-                // Eliminar también del sidebar si hay productos de esta categoría
-                let productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
-                productosSeleccionados = productosSeleccionados.filter(item => item.producto.categoriaId !== id);
-                localStorage.setItem('productosSeleccionados', JSON.stringify(productosSeleccionados));
-                actualizarEstadoVenta();
+                eliminarProductosDeSidebarPorCategoria(id);
             }
         }
 
-        // Función para eliminar producto
         function eliminarProducto(id, cardElement) {
-            if (confirm('¿Estás seguro de eliminar este producto?')) {
-                // Eliminar del localStorage
+            if (confirm('¿Eliminar este producto?')) {
                 let productos = JSON.parse(localStorage.getItem('productos')) || [];
-                productos = productos.filter(producto => producto.id !== id);
+                productos = productos.filter(p => p.id !== id);
                 localStorage.setItem('productos', JSON.stringify(productos));
-                
-                // Eliminar del DOM
                 cardElement.remove();
-                
-                // Eliminar también del sidebar si está allí
                 eliminarProductoDeSidebar(id);
             }
         }
 
-        // Función para agregar producto al sidebar
         function agregarProductoASidebar(producto, cantidad) {
             let productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
+            const index = productosSeleccionados.findIndex(item => item.producto.id === producto.id);
             
-            // Buscar si el producto ya está en la lista
-            const existingItemIndex = productosSeleccionados.findIndex(item => item.producto.id === producto.id);
-            
-            if (existingItemIndex >= 0) {
-                // Si ya existe, actualizar la cantidad
-                productosSeleccionados[existingItemIndex].cantidad += cantidad;
+            if (index >= 0) {
+                productosSeleccionados[index].cantidad += cantidad;
             } else {
-                // Si no existe, agregarlo
-                productosSeleccionados.push({
-                    producto: producto,
-                    cantidad: cantidad
-                });
+                productosSeleccionados.push({ producto: producto, cantidad: cantidad });
             }
             
             localStorage.setItem('productosSeleccionados', JSON.stringify(productosSeleccionados));
-            actualizarEstadoVenta();
+            actualizarSidebar();
         }
 
-        // Función para eliminar producto del sidebar
         function eliminarProductoDeSidebar(id) {
             let productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
             productosSeleccionados = productosSeleccionados.filter(item => item.producto.id !== id);
             localStorage.setItem('productosSeleccionados', JSON.stringify(productosSeleccionados));
-            actualizarEstadoVenta();
+            actualizarSidebar();
         }
 
-        // Función para actualizar todo el estado
-        function actualizarEstadoVenta() {
-            const productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
-            const finalizarVentaBtn = document.getElementById("finalizarVentaBtn");
-            
-            if (finalizarVentaBtn) {
-                finalizarVentaBtn.disabled = productosSeleccionados.length === 0;
-            }
-            
-            // Actualizar el total
-            actualizarTotal();
-        }
-
-        // Función para actualizar el total
-        function actualizarTotal() {
-            const productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
-            let total = 0;
-            
-            productosSeleccionados.forEach(item => {
-                total += item.producto.precio * item.cantidad;
-            });
-            
-            document.getElementById("totalAmount").textContent = total.toFixed(2);
-        }
-
-        // Función para actualizar cantidad de producto
-        function actualizarCantidadProducto(productId, cambio) {
+        function eliminarProductosDeSidebarPorCategoria(categoriaId) {
             let productosSeleccionados = JSON.parse(localStorage.getItem('productosSeleccionados')) || [];
-            const itemIndex = productosSeleccionados.findIndex(item => item.producto.id === productId);
-            
-            if (itemIndex >= 0) {
-                productosSeleccionados[itemIndex].cantidad += cambio;
-                
-                // Eliminar si la cantidad es cero o menos
-                if (productosSeleccionados[itemIndex].cantidad <= 0) {
-                    productosSeleccionados.splice(itemIndex, 1);
-                }
-                
-                localStorage.setItem('productosSeleccionados', JSON.stringify(productosSeleccionados));
-                actualizarEstadoVenta();
-            }
+            productosSeleccionados = productosSeleccionados.filter(item => item.producto.categoriaId !== categoriaId);
+            localStorage.setItem('productosSeleccionados', JSON.stringify(productosSeleccionados));
+            actualizarSidebar();
         }
 
-        // Inicializar estado
-        actualizarEstadoVenta();
+        // Inicialización
+        cargarCategorias();
     });
 </script>
