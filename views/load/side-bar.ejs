@@ -4,12 +4,6 @@
             Carrito de Venta
             <span class="badge bg-primary ms-2" id="cartCounter">0</span>
         </h4>
-        <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="Buscar producto..." id="searchProduct">
-            <button class="btn btn-outline-light" type="button">
-                <i class="bi bi-search"></i>
-            </button>
-        </div>
     </div>
     
     <div class="table-responsive cart-items">
@@ -194,6 +188,11 @@
     margin: 1rem;
 }
 
+.content {
+    margin-right: 400px;
+    transition: margin-right 0.3s ease;
+}
+
 #montoRecibido:focus, #nombreCliente:focus {
     box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.25);
     border-color: #2ecc71;
@@ -221,6 +220,7 @@
     }
     .content {
         margin-bottom: 290px;
+        margin-right: 0px;
     }
 }
 
@@ -395,7 +395,7 @@
                 montoRecibido: recibido,
                 cambio: parseFloat(cambioInput.value),
                 total: total,
-                notas: notasVentaInput.value,
+                notas: notasVenta.value,
                 productos: state.productos.map(item => ({
                     id: item.producto.id,
                     nombre: item.producto.nombre,
