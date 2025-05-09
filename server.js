@@ -16,7 +16,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // Para formularios HTML
 
 // Servir archivos estáticos (CSS, JS, imágenes)
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '/views/modulos/css')));
 
 // Configuración de motor de plantillas (EJS)
 app.set('view engine', 'ejs'); // Motor EJS

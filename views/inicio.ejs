@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<%- include('load/head') %>
+<html>
+        <%- include('load/head') %>
 <body>
     <%- include('load/nav') %>
     <main class="main-container">
@@ -112,170 +113,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
-<style>
-    body {
-        margin: 0;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        font-family: Arial, sans-serif;
-    }
-    .main-container {
-        display: flex;
-        height: calc(100vh - 60px);
-    }
-    .content {
-        flex-grow: 1;
-        padding: 20px;
-        overflow-y: auto;
-        border-radius: 20px;
-        background-color: #f8f9fa;
-    }
-    .categorias-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        margin-top: 20px;
-    }
-    .producto-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        margin-top: 20px;
-    }
-    .btn-content {
-        position: fixed;
-        bottom: 30px;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        font-size: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-    }
-    .btn-categoria {
-        left: 16px;
-        bottom: 10px;
-    }
-    .btn-producto {
-        left: 80px;
-        bottom: 10px;
-    }
-    .card {
-        margin: 10px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        background: white;
-        transition: transform 0.2s;
-        width: 18rem;
-        cursor: pointer;
-        display: inline-block;
-    }
-    .card:hover {
-        transform: translateY(-5px);
-    }
-    .card-img-top {
-        height: 180px;
-        object-fit: cover;
-        border-top-left-radius: 8px;
-        border-top-right-radius: 8px;
-    }
-    .card-body {
-        padding: 15px;
-    }
-    .card-title {
-        font-size: 1.2rem;
-        margin-bottom: 10px;
-        color: #333;
-    }
-    .card-text {
-        color: #666;
-        font-size: 1rem;
-    }
-    .btn-eliminar {
-        background-color: #dc3545;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 4px;
-        cursor: pointer;
-        margin-right: 5px;
-    }
-    .btn-eliminar:hover {
-        background-color: #c82333;
-    }
-    .add-to-sidebar {
-        background-color: #28a745;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 4px;
-        cursor: pointer;
-        margin-top: 10px;
-    }
-    .add-to-sidebar:hover {
-        background-color: #218838;
-    }
-    .card-buttons {
-        display: flex;
-        justify-content: space-between;
-    }
-    .quantity-selector {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-    }
-    .quantity-selector input {
-        max-width: 70px;
-    }
-    .categoria-card {
-        width: 200px;
-        height: 120px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #fff;
-        border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
-    .categoria-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-    .categoria-card h3 {
-        margin: 0;
-        color: #333;
-    }
-    .back-button {
-        margin-bottom: 20px;
-        cursor: pointer;
-        color: #0d6efd;
-        display: inline-flex;
-        align-items: center;
-    }
-    .back-button:hover {
-        text-decoration: underline;
-    }
-    .content-header {
-        margin-bottom: 25px;
-        /* para el diseño */
-        /* border: red solid 1px; */
-    }
-    .content-header-title {
-        font-family: "Rubik", sans-serif;
-        font-size: 24px;
-        font-weight: bold;
-        color: #333;
-        margin-left: 5.5%;
-    }
-</style>
 
 <script>
     document.addEventListener("DOMContentLoaded", () => {
@@ -550,3 +387,4 @@
         cargarCategorias();
     });
 </script>
+</html>
