@@ -17,3 +17,6 @@ TPV-vscode es un proyecto diseñado para ofrecer una solución eficiente de punt
 1. Clona este repositorio:
    ```bash
    git clone https://github.com/CherryDev2712/TPV-vscode.git
+
+
+## recomiendo siempre estar en la ultima version del T.P.V. :D
