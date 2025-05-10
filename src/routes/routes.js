@@ -5,7 +5,11 @@ const router = Router();
 router.get('/', (req, res) => {
   res.render('inicio',
         {titulo: 'TPV | inicio'}
-    )
+  );
+
+  const jsPath = path.join(__dirname, '../views/public/js');
+  req.jsPath = jsPath;
+  next();
 });
 
 router.get('/productos', (req, res) => {
@@ -21,3 +25,10 @@ router.get('/ventas', (req, res) => {
 })
 
 export default router;
+
+
+router.use('/public/js', (req, res, next) => {
+  const jsPath = path.join(__dirname, '../views/public/js');
+  req.jsPath = jsPath;
+  next();
+});

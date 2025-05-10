@@ -127,56 +127,103 @@
             </div>
         </div>
     </div>
+    <!-- sweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const ventasTableBody = document.getElementById("ventasTableBody");
             const detalleVentaModal = new bootstrap.Modal('#detalleVentaModal');
-    
+            const detalleVentaModalTitle = document.querySelector('#detalleVentaModal .modal-title');
+
+            // Mostrar mensaje de bienvenida
+            Swal.fire({
+                title: 'Historial de Ventas',
+                text: 'Cargando registros de ventas...',
+                icon: 'info',
+                timer: 1500,
+                timerProgressBar: true,
+                showConfirmButton: false
+            });
+
             // Cargar ventas al iniciar
             cargarVentas();
-    
+
             function cargarVentas() {
                 const ventas = JSON.parse(localStorage.getItem('ventas')) || [];
-                ventasTableBody.innerHTML = ventas.length ? '' : '<tr><td colspan="7">No hay ventas</td></tr>';
                 
-                ventas.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)).forEach((venta, index) => {
-                    ventasTableBody.innerHTML += `
+                if (ventas.length === 0) {
+                    ventasTableBody.innerHTML = `
                         <tr>
-                            <td>${formatearFecha(venta.fecha)}</td>
-                            <td>${venta.cliente ?? 'Sin nombre'}</td>
-                            <td>${venta.tipoPago}</td>
-                            <td>$${venta.montoRecibido?.toFixed(2) || '0.00'}</td>
-                            <td>$${venta.cambio?.toFixed(2) || '0.00'}</td>
-                            <td>$${venta.total?.toFixed(2) || '0.00'}</td>
-                            <td>
-                                <button class="btn btn-sm btn-primary ver-detalle" data-index="${index}">
-                                    <i class="fas fa-eye"></i> Ver
-                                </button>
+                            <td colspan="7" class="text-center py-4">
+                                <div class="alert alert-info">
+                                    No hay registros de ventas disponibles
+                                </div>
                             </td>
                         </tr>
                     `;
-                });
-    
-                // Eventos para los botones
-                document.querySelectorAll('.ver-detalle').forEach(btn => {
-                    btn.addEventListener('click', () => mostrarDetalleVenta(btn.dataset.index));
+                    return;
+                }
+
+                ventasTableBody.innerHTML = '';
+                
+                // Ordenar ventas por fecha (más reciente primero)
+                ventas.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)).forEach((venta, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${formatearFecha(venta.fecha)}</td>
+                        <td>${venta.cliente ?? 'Consumidor Final'}</td>
+                        <td>${venta.tipoPago}</td>
+                        <td>$${venta.montoRecibido?.toFixed(2) || '0.00'}</td>
+                        <td>$${venta.cambio?.toFixed(2) || '0.00'}</td>
+                        <td>$${venta.total?.toFixed(2) || '0.00'}</td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-primary ver-detalle" data-index="${index}">
+                                    <i class="fas fa-eye"></i> Ver
+                                </button>
+                                <button class="btn btn-sm btn-success imprimir-ticket" data-index="${index}">
+                                    <i class="fas fa-print"></i> Ticket
+                                </button>
+                                <button class="btn btn-sm btn-danger eliminar-venta" data-index="${index}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    ventasTableBody.appendChild(row);
+
+                    // Asignar eventos a los botones de esta fila
+                    row.querySelector('.ver-detalle').addEventListener('click', () => mostrarDetalleVenta(index));
+                    row.querySelector('.imprimir-ticket').addEventListener('click', () => imprimirTicket(index));
+                    row.querySelector('.eliminar-venta').addEventListener('click', (e) => confirmarEliminarVenta(e, index));
                 });
             }
-    
+
             function mostrarDetalleVenta(index) {
                 const ventas = JSON.parse(localStorage.getItem('ventas')) || [];
                 const venta = ventas[index];
-    
-                if (!venta) return;
-    
+
+                if (!venta) {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'No se encontró la venta solicitada',
+                        icon: 'error',
+                        confirmButtonText: 'Entendido'
+                    });
+                    return;
+                }
+
+                // Actualizar título del modal con ID de venta
+                detalleVentaModalTitle.textContent = `Detalles de Venta #${index + 1}`;
+
                 // Datos principales
                 document.getElementById('detalleFecha').textContent = formatearFecha(venta.fecha, true);
                 document.getElementById('detalleCliente').textContent = venta.cliente || 'Consumidor Final';
                 document.getElementById('detalleTipoPago').textContent = venta.tipoPago;
                 document.getElementById('detalleMontoRecibido').textContent = venta.montoRecibido?.toFixed(2) || '0.00';
                 document.getElementById('detalleCambio').textContent = venta.cambio?.toFixed(2) || '0.00';
-                document.getElementById('detalleNotas').textContent = venta.notas || 'Sin notas';
-    
+                document.getElementById('detalleNotas').textContent = venta.notas || 'Sin notas adicionales';
+
                 // Productos
                 const productosBody = document.getElementById('detalleProductosBody');
                 productosBody.innerHTML = venta.productos.map(producto => `
@@ -187,22 +234,184 @@
                         <td>$${(producto.precioUnitario * producto.cantidad)?.toFixed(2) || '0.00'}</td>
                     </tr>
                 `).join('');
-    
+
                 detalleVentaModal.show();
             }
-    
+
+            function confirmarEliminarVenta(event, index) {
+                event.stopPropagation();
+                
+                const ventas = JSON.parse(localStorage.getItem('ventas')) || [];
+                const venta = ventas[index];
+                
+                if (!venta) return;
+
+                Swal.fire({
+                    title: '¿Eliminar venta?',
+                    html: `¿Estás seguro de eliminar la venta del <strong>${formatearFecha(venta.fecha)}</strong> por <strong>$${venta.total?.toFixed(2)}</strong>?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        eliminarVenta(index);
+                    }
+                });
+            }
+
+            function eliminarVenta(index) {
+                const ventas = JSON.parse(localStorage.getItem('ventas')) || [];
+                
+                if (index >= 0 && index < ventas.length) {
+                    ventas.splice(index, 1);
+                    localStorage.setItem('ventas', JSON.stringify(ventas));
+                    
+                    Swal.fire({
+                        title: '¡Eliminada!',
+                        text: 'La venta ha sido eliminada del historial',
+                        icon: 'success',
+                        timer: 1500,
+                        timerProgressBar: true
+                    });
+                    
+                    cargarVentas();
+                }
+            }
+
+            function imprimirTicket(index) {
+                const ventas = JSON.parse(localStorage.getItem('ventas')) || [];
+                const venta = ventas[index];
+                
+                if (!venta) {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'No se encontró la venta para generar el ticket',
+                        icon: 'error',
+                        confirmButtonText: 'Entendido'
+                    });
+                    return;
+                }
+
+                // Llenar datos del ticket
+                document.getElementById('ticketFecha').textContent = formatearFecha(venta.fecha, true);
+                document.getElementById('ticketCliente').textContent = venta.cliente || 'Consumidor Final';
+                document.getElementById('ticketTipoPago').textContent = venta.tipoPago;
+                document.getElementById('ticketMontoRecibido').textContent = venta.montoRecibido?.toFixed(2) || '0.00';
+                document.getElementById('ticketCambio').textContent = venta.cambio?.toFixed(2) || '0.00';
+                document.getElementById('ticketTotal').textContent = venta.total?.toFixed(2) || '0.00';
+                document.getElementById('ticketNotas').textContent = venta.notas || '';
+                document.getElementById('ticketCodigo').textContent = `Venta #${index + 1}`;
+
+                // Llenar productos del ticket
+                const ticketProductosBody = document.getElementById('ticketProductosBody');
+                ticketProductosBody.innerHTML = venta.productos.map(producto => `
+                    <tr>
+                        <td>${producto.nombre}</td>
+                        <td>${producto.cantidad}</td>
+                        <td>$${producto.precioUnitario?.toFixed(2) || producto.precio?.toFixed(2) || '0.00'}</td>
+                        <td>$${(producto.precioUnitario * producto.cantidad)?.toFixed(2) || '0.00'}</td>
+                    </tr>
+                `).join('');
+
+                // Mostrar confirmación antes de imprimir
+                Swal.fire({
+                    title: 'Imprimir Ticket',
+                    html: `¿Deseas imprimir el ticket de la venta del <strong>${formatearFecha(venta.fecha)}</strong>?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '<i class="fas fa-print"></i> Imprimir',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Lógica para imprimir el ticket
+                        const ticketContainer = document.getElementById('ticketContainer');
+                        ticketContainer.style.display = 'block';
+                        
+                        // Usar librería de impresión o window.print()
+                        setTimeout(() => {
+                            window.print();
+                            ticketContainer.style.display = 'none';
+                        }, 200);
+                        
+                        Swal.fire({
+                            title: 'Ticket enviado a impresión',
+                            icon: 'success',
+                            timer: 1500,
+                            timerProgressBar: true,
+                            showConfirmButton: false
+                        });
+                    }
+                });
+            }
+
             function formatearFecha(fechaString, conHora = false) {
                 const fecha = new Date(fechaString);
-                return fecha.toLocaleString('es-MX', {
+                const opciones = {
                     year: 'numeric',
                     month: '2-digit',
-                    day: '2-digit',
-                    hour: conHora ? '2-digit' : undefined,
-                    minute: conHora ? '2-digit' : undefined
+                    day: '2-digit'
+                };
+                
+                if (conHora) {
+                    opciones.hour = '2-digit';
+                    opciones.minute = '2-digit';
+                }
+                
+                return fecha.toLocaleString('es-MX', opciones);
+            }
+
+            // Opcional: Botón para eliminar todas las ventas
+            const btnEliminarTodo = document.createElement('button');
+            btnEliminarTodo.className = 'btn btn-danger mb-3';
+            btnEliminarTodo.innerHTML = '<i class="fas fa-trash"></i> Eliminar Todo el Historial';
+            btnEliminarTodo.addEventListener('click', confirmarEliminarTodo);
+            document.querySelector('main').insertBefore(btnEliminarTodo, document.querySelector('.table-responsive'));
+
+            function confirmarEliminarTodo() {
+                const ventas = JSON.parse(localStorage.getItem('ventas')) || [];
+                
+                if (ventas.length === 0) {
+                    Swal.fire({
+                        title: 'No hay ventas',
+                        text: 'El historial de ventas ya está vacío',
+                        icon: 'info',
+                        confirmButtonText: 'Entendido'
+                    });
+                    return;
+                }
+
+                Swal.fire({
+                    title: '¿Eliminar todo el historial?',
+                    html: `¿Estás seguro de eliminar todas las <strong>${ventas.length}</strong> ventas registradas?<br><br>Esta acción no se puede deshacer.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Sí, eliminar todo',
+                    cancelButtonText: 'Cancelar',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        localStorage.removeItem('ventas');
+                        cargarVentas();
+                        
+                        Swal.fire({
+                            title: '¡Historial eliminado!',
+                            text: 'Todas las ventas han sido eliminadas',
+                            icon: 'success',
+                            timer: 1500,
+                            timerProgressBar: true
+                        });
+                    }
                 });
             }
         });
-    </script>
     </script>
 </body>
 </html>
