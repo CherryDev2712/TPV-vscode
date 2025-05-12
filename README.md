@@ -2,8 +2,6 @@
 
 ¡Bienvenido a **TPV-vscode**! Este proyecto proporciona una solución eficiente y optimizada para manejar funcionalidades de Terminal Punto de Venta (TPV) dentro del entorno de desarrollo **Visual Studio Code**.
 
-## Versión Actual: 1.0.0
-
 ### Descripción
 
 La versión 1.0.0 marca el lanzamiento inicial de **TPV-vscode**, ofreciendo una base sólida para procesos y características clave que necesitas para gestionar tu TPV. Esta versión se enfoca en la estabilidad, usabilidad y compatibilidad.
