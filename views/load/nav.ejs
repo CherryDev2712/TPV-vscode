@@ -11,7 +11,7 @@
         <style>
             nav {
                 height: 56px !important;
-                background: linear-gradient(to right, #000000 76%, #0a192f 100%) !important;
+                background-color: #000;
             }
             nav a {
                 color: #fff !important;
@@ -20,10 +20,14 @@
                 color: #fff !important;
                 font-size: 30px;
             }
+            .navAzul {
+                height: 56px !important;
+                background: linear-gradient(to right, #000000 80%, #0a192f 100%);
+            }
         </style>
     </head>
     <body>
-        <nav class="navbar navbar-expand bg-faded">
+        <nav class="navbar navbar-expand bg-faded" id="nav-1">
             <div class="container">
                 <h3 class="navbar-brand" href=""><span class="nav-title-1">T.P.V.</span></h3>
                 <ul class="navbar-nav me-auto mt-2 mt-lg-0">
@@ -36,12 +40,25 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/ventas">ventas</a>
                     </li>
-
+                    <li class="nav-item">
+                        <a class="nav-link" href="/clientes">clientes</a>
+                    </li>
                 </ul>
             </div>
         </nav>
         
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const nav = document.querySelector("#nav-1");
+                if (window.location.pathname === "/") {
+                    nav.classList.add("navAzul");
+                    nav.classList.remove("nav");
+                    return
+                }
+
+            })
+        </script>
     </body>
 </html>
