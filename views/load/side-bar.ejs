@@ -92,8 +92,8 @@
                             </div>
                             
                             <div class="mb-3">
-                                <label class="form-label">Notas</label>
-                                <textarea class="form-control" rows="2" id="notasVenta"></textarea>
+                                <label class="form-label">Numero de Telefono</label>
+                                <input class="form-control" rows="2" id="numero" max="10" min="10">
                             </div>
                         </div>
                     </div>
@@ -259,7 +259,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const cambioInput = document.getElementById('cambio');
     const nombreClienteInput = document.getElementById('nombreCliente');
     const tipoPagoSelect = document.getElementById('tipoPago');
-    const notasVentaInput = document.getElementById('notasVenta');
+    const numeroInput = document.getElementById('numero');
     
     // Event Listeners
     document.getElementById('finalizarVentaBtn').addEventListener('click', mostrarModalVenta);
@@ -402,7 +402,7 @@ document.addEventListener("DOMContentLoaded", () => {
         cambioInput.value = '';
         nombreClienteInput.value = '';
         tipoPagoSelect.value = 'Efectivo';
-        notasVentaInput.value = '';
+        numeroInput.value = '';
         montoRecibido.focus();
     }
 
@@ -427,7 +427,7 @@ document.addEventListener("DOMContentLoaded", () => {
             montoRecibido: recibido,
             cambio: parseFloat(cambioInput.value),
             total: total,
-            notas: notasVenta.value,
+            notas: numero.value,
             productos: state.productos.map(item => ({
                 id: item.producto.id,
                 nombre: item.producto.nombre,
