@@ -79,7 +79,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="imagenProducto" class="form-label">Imagen del producto</label>
-                            <input type="file" class="form-control" id="imagenProducto" accept="image/*">
+                            <input type="file" class="form-control" id="imagenProducto" accept="image/*" required>
                         </div>
                         <button type="submit" class="btn btn-primary">Guardar</button>
                     </form>
@@ -277,6 +277,9 @@
         color: #333;
         margin-left: 5.5%;
     }
+    .modal-backdrop {
+        display: none;
+    }
 </style>
 
 <script>
@@ -327,7 +330,7 @@
         guardarCategoria(categoria);
         crearCardCategoria(categoria);
         categoriaForm.reset();
-        new bootstrap.Modal(document.getElementById('categoriaModal')).hide();
+        new bootstrap.Modal(document.getElementById('categoriaModal'));
         
         Swal.fire({
             title: '¡Éxito!',

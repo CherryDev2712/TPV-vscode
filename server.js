@@ -25,13 +25,6 @@ app.set('views', path.join(__dirname, 'views')); // Carpeta de vistas
 // Usar rutas importadas
 app.use('/', routes);
 
-// Manejo de errores para rutas no encontradas (404)
-app.use((req, res) => {
-  res.render('error',
-    {titulo: 'error'}
-  )
-});
-
 // Iniciar servidor
 app.listen(PORT, () => {
   console.log(`Servidor test ejecutando en http://localhost:${PORT}`);
