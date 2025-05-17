@@ -482,7 +482,9 @@
         const card = document.createElement("div");
         card.classList.add("categoria-card");
         card.dataset.id = categoria.id;
-        card.innerHTML = `<h3>${categoria.nombre}</h3>`;
+        card.innerHTML = `
+            <h3>${categoria.nombre} <i class="bi bi-box-seam"></i></h3>
+        `;
         
         card.addEventListener('click', () => {
             currentCategory = categoria;
